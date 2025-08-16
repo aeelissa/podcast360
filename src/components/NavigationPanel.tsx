@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download } from 'lucide-react';
+import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download, X } from 'lucide-react';
 
 interface NavigationPanelProps {
   isVisible: boolean;
@@ -43,152 +43,160 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
   if (!isVisible) return null;
 
   return (
-    <div className="podcast-panel h-full flex flex-col animate-slide-in-left overflow-y-auto">
+    <div className="podcast-panel h-full flex flex-col animate-slide-in-left">
       {/* Header */}
       <div className="podcast-header px-4 py-3 rounded-t-xl flex justify-between items-center flex-shrink-0">
-        <h2 className="font-semibold">التنقل والإعدادات</h2>
+        <h2 className="font-bold text-right">التنقل والإعدادات</h2>
         <button
           onClick={onClose}
-          className="text-white/80 hover:text-white transition-colors"
+          className="text-white/80 hover:text-white transition-colors p-1"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {/* Navigation Section */}
-        <div className="p-4 border-b border-podcast-border">
-          <h3 className="font-medium text-podcast-gray mb-3 text-sm">التنقل</h3>
-          <div className="space-y-1">
-            {navigationItems.map((item, index) => (
-              <button
-                key={index}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
-                  item.active
-                    ? 'bg-podcast-blue text-white'
-                    : 'text-podcast-gray hover:bg-podcast-blue/10 hover:text-podcast-blue'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
-            ))}
+      <div className="flex-1 overflow-hidden relative">
+        <div className="h-full overflow-y-auto scroll-smooth">
+          {/* Navigation Section */}
+          <div className="p-4 border-b border-podcast-border">
+            <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">التنقل</h3>
+            <div className="space-y-1">
+              {navigationItems.map((item, index) => (
+                <button
+                  key={index}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-right font-medium ${
+                    item.active
+                      ? 'bg-podcast-blue text-white'
+                      : 'text-podcast-gray hover:bg-podcast-blue/10 hover:text-podcast-blue'
+                  }`}
+                >
+                  <span className="mr-auto">{item.label}</span>
+                  {item.icon}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Settings Section */}
-        <div className="p-4 border-b border-podcast-border">
-          <h3 className="font-medium text-podcast-gray mb-3 text-sm">الإعدادات</h3>
-          <div className="space-y-1">
-            {settingsItems.map((item, index) => (
-              <button
-                key={index}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray hover:bg-podcast-blue/10 hover:text-podcast-blue transition-all"
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
-            ))}
+          {/* Settings Section */}
+          <div className="p-4 border-b border-podcast-border">
+            <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">الإعدادات</h3>
+            <div className="space-y-1">
+              {settingsItems.map((item, index) => (
+                <button
+                  key={index}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray hover:bg-podcast-blue/10 hover:text-podcast-blue transition-all text-right font-medium"
+                >
+                  <span className="mr-auto">{item.label}</span>
+                  {item.icon}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Podcast Brain Section */}
-        <div className="p-4 border-b border-podcast-border">
-          <div className="flex items-center gap-2 mb-3">
-            <h3 className="font-medium text-podcast-gray text-sm">Podcast Brain</h3>
-            <span className="text-xs text-podcast-gray/60">(اقرأ فقط)</span>
+          {/* Podcast Brain Section */}
+          <div className="p-4 border-b border-podcast-border">
+            <div className="flex items-center gap-2 mb-3 justify-end">
+              <span className="text-xs text-podcast-gray/60">(اقرأ فقط)</span>
+              <h3 className="font-bold text-podcast-gray text-sm">Podcast Brain</h3>
+            </div>
+            <div className="space-y-2">
+              {podcastBrainData.map((item, index) => (
+                <div key={index} className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
+                  <div className="text-xs font-bold text-podcast-blue mb-1 text-right">{item.label}</div>
+                  <div className="text-xs text-podcast-gray text-right leading-relaxed">{item.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-2">
-            {podcastBrainData.map((item, index) => (
-              <div key={index} className="bg-podcast-blue/5 rounded-lg p-2">
-                <div className="text-xs font-medium text-podcast-blue mb-1">{item.label}</div>
-                <div className="text-xs text-podcast-gray">{item.value}</div>
+
+          {/* Episode Brain Section */}
+          <div className="p-4 border-b border-podcast-border">
+            <div className="flex items-center gap-2 mb-3 justify-end">
+              <span className="text-xs text-podcast-gray/60">(اقرأ فقط)</span>
+              <h3 className="font-bold text-podcast-gray text-sm">Episode Brain</h3>
+            </div>
+            
+            {/* Episode Goals */}
+            <div className="mb-4">
+              <h4 className="text-xs font-bold text-podcast-blue mb-2 text-right">أهداف الحلقة</h4>
+              <div className="space-y-2">
+                {episodeGoals.map((goal, index) => (
+                  <div key={index} className="flex items-start gap-2 text-right">
+                    <span className="text-xs text-podcast-gray leading-relaxed">{goal}</span>
+                    <div className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Episode Brain Section */}
-        <div className="p-4 border-b border-podcast-border">
-          <div className="flex items-center gap-2 mb-3">
-            <h3 className="font-medium text-podcast-gray text-sm">Episode Brain</h3>
-            <span className="text-xs text-podcast-gray/60">(اقرأ فقط)</span>
-          </div>
-          
-          {/* Episode Goals */}
-          <div className="mb-4">
-            <h4 className="text-xs font-medium text-podcast-blue mb-2">أهداف الحلقة</h4>
-            <div className="space-y-1">
-              {episodeGoals.map((goal, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-1.5 flex-shrink-0"></div>
-                  <span className="text-xs text-podcast-gray">{goal}</span>
-                </div>
-              ))}
+            {/* Success Criteria */}
+            <div>
+              <h4 className="text-xs font-bold text-podcast-blue mb-2 text-right">معايير النجاح</h4>
+              <div className="space-y-2">
+                {successCriteria.map((criteria, index) => (
+                  <div key={index} className="flex items-start gap-2 text-right">
+                    <span className="text-xs text-podcast-gray leading-relaxed">{criteria}</span>
+                    <div className="w-1.5 h-1.5 bg-podcast-gold rounded-full mt-1.5 flex-shrink-0"></div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Success Criteria */}
-          <div>
-            <h4 className="text-xs font-medium text-podcast-blue mb-2">معايير النجاح</h4>
-            <div className="space-y-1">
-              {successCriteria.map((criteria, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-podcast-gold rounded-full mt-1.5 flex-shrink-0"></div>
-                  <span className="text-xs text-podcast-gray">{criteria}</span>
-                </div>
-              ))}
+          {/* Work Status Section */}
+          <div className="p-4 border-b border-podcast-border">
+            <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">حالة العمل</h3>
+            <div className="flex justify-end">
+              <div className="inline-flex items-center gap-2 bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-xs font-bold">
+                مسودة
+                <div className="w-2 h-2 bg-podcast-gold rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons Section */}
+          <div className="p-4 border-b border-podcast-border">
+            <div className="space-y-2">
+              <button
+                disabled
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed text-right font-medium"
+              >
+                <span className="mr-auto">اعتماد المدير</span>
+                <CheckCircle className="w-4 h-4" />
+              </button>
+              <button
+                disabled
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed text-right font-medium"
+              >
+                <span className="mr-auto">تعليق المدير</span>
+                <MessageSquare className="w-4 h-4" />
+              </button>
+              <button
+                disabled
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed text-right font-medium"
+              >
+                <span className="mr-auto">تصدير</span>
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Project Info Section */}
+          <div className="p-4">
+            <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-4">
+              <h4 className="font-bold text-podcast-blue mb-1 text-sm text-right">Podcast360 - MVP</h4>
+              <p className="text-xs text-podcast-gray text-right leading-relaxed">مشروع تجريبي لمنصة البودكاست</p>
+              <div className="mt-3 flex items-center gap-2 justify-end">
+                <span className="text-xs text-podcast-gray">متصل</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Work Status Section */}
-        <div className="p-4 border-b border-podcast-border">
-          <h3 className="font-medium text-podcast-gray mb-3 text-sm">حالة العمل</h3>
-          <div className="inline-flex items-center gap-2 bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-xs font-medium">
-            <div className="w-2 h-2 bg-podcast-gold rounded-full"></div>
-            مسودة
-          </div>
-        </div>
-
-        {/* Action Buttons Section */}
-        <div className="p-4">
-          <div className="space-y-2">
-            <button
-              disabled
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed"
-            >
-              <CheckCircle className="w-4 h-4" />
-              <span>اعتماد المدير</span>
-            </button>
-            <button
-              disabled
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>تعليق المدير</span>
-            </button>
-            <button
-              disabled
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed"
-            >
-              <Download className="w-4 h-4" />
-              <span>تصدير</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Project Info Section */}
-      <div className="mt-auto p-4 border-t border-podcast-border flex-shrink-0">
-        <div className="bg-podcast-blue/5 rounded-lg p-3">
-          <h4 className="font-medium text-podcast-blue mb-1 text-sm">Podcast360 - MVP</h4>
-          <p className="text-xs text-podcast-gray">مشروع تجريبي لمنصة البودكاست</p>
-          <div className="mt-2 flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-xs text-podcast-gray">متصل</span>
-          </div>
-        </div>
+        
+        {/* Scroll shadows */}
+        <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
       </div>
     </div>
   );

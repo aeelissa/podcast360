@@ -85,30 +85,30 @@ const WorkArea = () => {
     if (activeTab === 'concept') {
       return (
         <div className="space-y-6">
-          <div>
-            <h3 className="text-xl font-bold text-podcast-blue mb-2">{content.title}</h3>
-            <p className="text-podcast-gray leading-relaxed">{content.description}</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h3 className="text-2xl font-bold text-podcast-blue mb-3 leading-tight text-right">{content.title}</h3>
+            <p className="text-podcast-gray leading-relaxed text-right text-lg">{content.description}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="podcast-panel p-4">
-              <h4 className="font-semibold mb-2">الجمهور المستهدف</h4>
-              <p className="text-sm text-podcast-gray">{content.targetAudience}</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <h4 className="font-bold mb-2 text-podcast-blue text-right">الجمهور المستهدف</h4>
+              <p className="text-sm text-podcast-gray text-right leading-relaxed">{content.targetAudience}</p>
             </div>
             
-            <div className="podcast-panel p-4">
-              <h4 className="font-semibold mb-2">المدة المتوقعة</h4>
-              <p className="text-sm text-podcast-gray">{content.duration}</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <h4 className="font-bold mb-2 text-podcast-blue text-right">المدة المتوقعة</h4>
+              <p className="text-sm text-podcast-gray text-right leading-relaxed">{content.duration}</p>
             </div>
           </div>
           
-          <div className="podcast-panel p-4">
-            <h4 className="font-semibold mb-3">الأهداف</h4>
-            <ul className="space-y-2">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h4 className="font-bold mb-4 text-podcast-blue text-right">الأهداف</h4>
+            <ul className="space-y-3">
               {content.objectives.map((objective: string, index: number) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
+                <li key={index} className="flex items-start gap-3 text-sm text-right">
                   <span className="w-2 h-2 bg-podcast-blue rounded-full mt-2 flex-shrink-0"></span>
-                  <span>{objective}</span>
+                  <span className="leading-relaxed">{objective}</span>
                 </li>
               ))}
             </ul>
@@ -120,29 +120,29 @@ const WorkArea = () => {
     if (activeTab === 'preparation') {
       return (
         <div className="space-y-6">
-          <div className="podcast-panel p-4">
-            <h4 className="font-semibold mb-3">نقاط البحث</h4>
-            <ul className="space-y-2">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h4 className="font-bold mb-4 text-podcast-blue text-right">نقاط البحث</h4>
+            <ul className="space-y-3">
               {content.researchPoints.map((point: string, index: number) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
+                <li key={index} className="flex items-start gap-3 text-sm text-right">
                   <span className="w-2 h-2 bg-podcast-gold rounded-full mt-2 flex-shrink-0"></span>
-                  <span>{point}</span>
+                  <span className="leading-relaxed">{point}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="podcast-panel p-4">
-            <h4 className="font-semibold mb-3">الضيوف</h4>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h4 className="font-bold mb-4 text-podcast-blue text-right">الضيوف</h4>
             {content.guests.map((guest: any, index: number) => (
-              <div key={index} className="border-r-4 border-podcast-blue pr-3 mb-3">
-                <p className="font-medium">{guest.name}</p>
-                <p className="text-sm text-podcast-gray mb-1">{guest.role}</p>
-                <div className="flex flex-wrap gap-1">
+              <div key={index} className="border-r-4 border-podcast-blue pr-4 mb-4">
+                <p className="font-bold text-right">{guest.name}</p>
+                <p className="text-sm text-podcast-gray mb-2 text-right leading-relaxed">{guest.role}</p>
+                <div className="flex flex-wrap gap-2 justify-end">
                   {guest.topics.map((topic: string, topicIndex: number) => (
                     <span
                       key={topicIndex}
-                      className="bg-podcast-blue/10 text-podcast-blue px-2 py-1 rounded text-xs"
+                      className="bg-podcast-blue/10 text-podcast-blue px-3 py-1 rounded-full text-xs font-medium"
                     >
                       {topic}
                     </span>
@@ -153,18 +153,18 @@ const WorkArea = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="podcast-panel p-4">
-              <h4 className="font-semibold mb-3">المعدات المطلوبة</h4>
-              <ul className="space-y-1 text-sm">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <h4 className="font-bold mb-3 text-podcast-blue text-right">المعدات المطلوبة</h4>
+              <ul className="space-y-2 text-sm text-right">
                 {content.equipment.map((item: string, index: number) => (
-                  <li key={index}>• {item}</li>
+                  <li key={index} className="leading-relaxed">• {item}</li>
                 ))}
               </ul>
             </div>
             
-            <div className="podcast-panel p-4">
-              <h4 className="font-semibold mb-2">الجدول الزمني</h4>
-              <p className="text-sm text-podcast-gray">{content.timeline}</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <h4 className="font-bold mb-2 text-podcast-blue text-right">الجدول الزمني</h4>
+              <p className="text-sm text-podcast-gray text-right leading-relaxed">{content.timeline}</p>
             </div>
           </div>
         </div>
@@ -174,29 +174,29 @@ const WorkArea = () => {
     if (activeTab === 'script') {
       return (
         <div className="space-y-6">
-          <div className="podcast-panel p-4">
-            <h4 className="font-semibold mb-3">المقدمة</h4>
-            <p className="text-sm leading-relaxed bg-gray-50 p-3 rounded">{content.intro}</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h4 className="font-bold mb-4 text-podcast-blue text-right">المقدمة</h4>
+            <p className="text-sm leading-relaxed bg-white p-4 rounded-lg border text-right">{content.intro}</p>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold">أقسام الحلقة</h4>
+            <h4 className="font-bold text-podcast-blue text-right">أقسام الحلقة</h4>
             {content.sections.map((section: any, index: number) => (
-              <div key={index} className="podcast-panel p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h5 className="font-medium text-podcast-blue">{section.title}</h5>
-                  <span className="text-xs bg-podcast-gold/20 text-podcast-gold-dark px-2 py-1 rounded">
+              <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                <div className="flex justify-between items-start mb-3 flex-row-reverse">
+                  <h5 className="font-bold text-podcast-blue text-right">{section.title}</h5>
+                  <span className="text-xs bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full font-medium">
                     {section.duration}
                   </span>
                 </div>
-                <p className="text-sm text-podcast-gray">{section.content}</p>
+                <p className="text-sm text-podcast-gray text-right leading-relaxed">{section.content}</p>
               </div>
             ))}
           </div>
 
-          <div className="podcast-panel p-4">
-            <h4 className="font-semibold mb-3">الخاتمة</h4>
-            <p className="text-sm leading-relaxed bg-gray-50 p-3 rounded">{content.outro}</p>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+            <h4 className="font-bold mb-4 text-podcast-blue text-right">الخاتمة</h4>
+            <p className="text-sm leading-relaxed bg-white p-4 rounded-lg border text-right">{content.outro}</p>
           </div>
         </div>
       );
@@ -207,8 +207,8 @@ const WorkArea = () => {
 
   const renderSource = (content: any) => {
     return (
-      <div className="podcast-source-view">
-        <pre>{JSON.stringify(content, null, 2)}</pre>
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 font-mono text-sm overflow-auto">
+        <pre className="text-right">{JSON.stringify(content, null, 2)}</pre>
       </div>
     );
   };
@@ -217,19 +217,19 @@ const WorkArea = () => {
     <div className="podcast-panel h-full flex flex-col">
       {/* Tab Navigation */}
       <div className="border-b border-podcast-border">
-        <div className="flex">
+        <div className="flex overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
+              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all whitespace-nowrap font-medium ${
                 activeTab === tab.id
-                  ? 'border-podcast-blue text-podcast-blue bg-podcast-blue/5'
+                  ? 'border-podcast-blue text-podcast-blue bg-podcast-blue/5 font-bold'
                   : 'border-transparent text-podcast-gray hover:text-podcast-blue hover:bg-podcast-blue/5'
               }`}
             >
               {tab.icon}
-              <span className="font-medium">{tab.title}</span>
+              <span>{tab.title}</span>
             </button>
           ))}
         </div>
@@ -237,39 +237,46 @@ const WorkArea = () => {
 
       {/* View Mode Toggle */}
       <div className="p-4 border-b border-podcast-border">
-        <div className="podcast-toggle w-fit">
-          <button
-            onClick={() => setViewMode('preview')}
-            className={`px-3 py-1 rounded text-sm transition-all flex items-center gap-1 ${
-              viewMode === 'preview' 
-                ? 'podcast-toggle-active' 
-                : 'podcast-toggle-inactive'
-            }`}
-          >
-            <Eye className="w-3 h-3" />
-            معاينة
-          </button>
-          <button
-            onClick={() => setViewMode('source')}
-            className={`px-3 py-1 rounded text-sm transition-all flex items-center gap-1 ${
-              viewMode === 'source' 
-                ? 'podcast-toggle-active' 
-                : 'podcast-toggle-inactive'
-            }`}
-          >
-            <Code className="w-3 h-3" />
-            مصدر
-          </button>
+        <div className="flex justify-center">
+          <div className="bg-gray-100 border border-gray-200 rounded-lg p-1 flex gap-1">
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`px-4 py-2 rounded text-sm transition-all flex items-center gap-2 font-medium ${
+                viewMode === 'preview' 
+                  ? 'bg-podcast-blue text-white shadow-sm font-bold' 
+                  : 'text-podcast-gray hover:bg-white cursor-pointer'
+              }`}
+            >
+              <Eye className="w-3 h-3" />
+              معاينة
+            </button>
+            <button
+              onClick={() => setViewMode('source')}
+              className={`px-4 py-2 rounded text-sm transition-all flex items-center gap-2 font-medium ${
+                viewMode === 'source' 
+                  ? 'bg-podcast-blue text-white shadow-sm font-bold' 
+                  : 'text-podcast-gray hover:bg-white cursor-pointer'
+              }`}
+            >
+              <Code className="w-3 h-3" />
+              مصدر
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        {currentTab && (
-          viewMode === 'preview' 
-            ? renderPreview(currentTab.content)
-            : renderSource(currentTab.content)
-        )}
+      {/* Content Area with scroll shadows */}
+      <div className="flex-1 overflow-hidden relative">
+        <div className="h-full overflow-y-auto p-6 scroll-smooth">
+          {currentTab && (
+            viewMode === 'preview' 
+              ? renderPreview(currentTab.content)
+              : renderSource(currentTab.content)
+          )}
+        </div>
+        {/* Scroll shadows */}
+        <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
       </div>
     </div>
   );
