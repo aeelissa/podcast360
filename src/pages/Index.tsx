@@ -1,11 +1,61 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import { Menu } from 'lucide-react';
+import AIChatPanel from '../components/AIChatPanel';
+import WorkArea from '../components/WorkArea';
+import NavigationPanel from '../components/NavigationPanel';
 
 const Index = () => {
+  const [isNavigationVisible, setIsNavigationVisible] = useState(false);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-podcast-bg" dir="rtl">
+      {/* Header */}
+      <header className="bg-white border-b border-podcast-border px-4 py-3 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsNavigationVisible(!isNavigationVisible)}
+              className="p-2 hover:bg-podcast-blue/10 rounded-lg transition-colors"
+              title="فتح/إغلاق لوحة التنقل"
+            >
+              <Menu className="w-5 h-5 text-podcast-blue" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-podcast-blue">Podcast360</h1>
+              <p className="text-sm text-podcast-gray">منصة إنتاج البودكاست بالذكاء الاصطناعي</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium">
+              MVP
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Layout */}
+      <div className="flex h-[calc(100vh-73px)]">
+        {/* Left Panel - AI Chat */}
+        <div className="w-80 flex-shrink-0 p-4">
+          <AIChatPanel />
+        </div>
+
+        {/* Center Panel - Work Area */}
+        <div className="flex-1 p-4">
+          <WorkArea />
+        </div>
+
+        {/* Right Panel - Navigation (Collapsible) */}
+        {isNavigationVisible && (
+          <div className="w-80 flex-shrink-0 p-4">
+            <NavigationPanel
+              isVisible={isNavigationVisible}
+              onClose={() => setIsNavigationVisible(false)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
