@@ -4,12 +4,16 @@ import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
 import WorkArea from '../components/WorkArea';
 import NavigationPanel from '../components/NavigationPanel';
+import DemoBanner from '../components/DemoBanner';
 
 const Index = () => {
   const [isNavigationVisible, setIsNavigationVisible] = useState(false);
 
   return (
     <div className="min-h-screen bg-podcast-bg font-medium" dir="rtl">
+      {/* Demo Banner */}
+      <DemoBanner />
+
       {/* Header */}
       <header className="bg-white border-b border-podcast-border px-4 py-3 shadow-sm sticky top-0 z-10">
         <div className="flex items-center justify-between">
