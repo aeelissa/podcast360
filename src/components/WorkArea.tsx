@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { FileText, Settings, Eye, Code } from 'lucide-react';
+import { FileText, Settings, Eye, Code, Copy, Languages, Clock } from 'lucide-react';
 
 interface TabData {
   id: string;
@@ -12,6 +11,8 @@ interface TabData {
 const WorkArea = () => {
   const [activeTab, setActiveTab] = useState('concept');
   const [viewMode, setViewMode] = useState<'preview' | 'source'>('preview');
+  const [isEasternNumerals, setIsEasternNumerals] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const tabs: TabData[] = [
     {
@@ -81,24 +82,65 @@ const WorkArea = () => {
 
   const currentTab = tabs.find(tab => tab.id === activeTab);
 
+  // Function to convert Western numerals to Eastern Arabic numerals
+  const convertToEasternNumerals = (text: string) => {
+    if (!isEasternNumerals) return text;
+    
+    const westernToEastern = {
+      '0': '٠',
+      '1': '١',
+      '2': '٢',
+      '3': '٣',
+      '4': '٤',
+      '5': '٥',
+      '6': '٦',
+      '7': '٧',
+      '8': '٨',
+      '9': '٩'
+    };
+    
+    return text.replace(/[0-9]/g, (digit) => westernToEastern[digit as keyof typeof westernToEastern] || digit);
+  };
+
+  // Function to copy JSON to clipboard
+  const copyToClipboard = async () => {
+    if (currentTab) {
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(currentTab.content, null, 2));
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+      }
+    }
+  };
+
   const renderPreview = (content: any) => {
     if (activeTab === 'concept') {
       return (
         <div className="space-y-6">
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-            <h3 className="text-2xl font-bold text-podcast-blue mb-3 leading-tight text-right">{content.title}</h3>
-            <p className="text-podcast-gray leading-relaxed text-right text-lg">{content.description}</p>
+            <h3 className="text-2xl font-bold text-podcast-blue mb-3 leading-tight text-right">
+              {convertToEasternNumerals(content.title)}
+            </h3>
+            <p className="text-podcast-gray leading-relaxed text-right text-lg">
+              {convertToEasternNumerals(content.description)}
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
               <h4 className="font-bold mb-2 text-podcast-blue text-right">الجمهور المستهدف</h4>
-              <p className="text-sm text-podcast-gray text-right leading-relaxed">{content.targetAudience}</p>
+              <p className="text-sm text-podcast-gray text-right leading-relaxed">
+                {convertToEasternNumerals(content.targetAudience)}
+              </p>
             </div>
             
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
               <h4 className="font-bold mb-2 text-podcast-blue text-right">المدة المتوقعة</h4>
-              <p className="text-sm text-podcast-gray text-right leading-relaxed">{content.duration}</p>
+              <p className="text-sm text-podcast-gray text-right leading-relaxed">
+                {convertToEasternNumerals(content.duration)}
+              </p>
             </div>
           </div>
           
@@ -108,7 +150,7 @@ const WorkArea = () => {
               {content.objectives.map((objective: string, index: number) => (
                 <li key={index} className="flex items-start gap-3 text-sm text-right">
                   <span className="w-2 h-2 bg-podcast-blue rounded-full mt-2 flex-shrink-0"></span>
-                  <span className="leading-relaxed">{objective}</span>
+                  <span className="leading-relaxed">{convertToEasternNumerals(objective)}</span>
                 </li>
               ))}
             </ul>
@@ -126,7 +168,7 @@ const WorkArea = () => {
               {content.researchPoints.map((point: string, index: number) => (
                 <li key={index} className="flex items-start gap-3 text-sm text-right">
                   <span className="w-2 h-2 bg-podcast-gold rounded-full mt-2 flex-shrink-0"></span>
-                  <span className="leading-relaxed">{point}</span>
+                  <span className="leading-relaxed">{convertToEasternNumerals(point)}</span>
                 </li>
               ))}
             </ul>
@@ -136,15 +178,17 @@ const WorkArea = () => {
             <h4 className="font-bold mb-4 text-podcast-blue text-right">الضيوف</h4>
             {content.guests.map((guest: any, index: number) => (
               <div key={index} className="border-r-4 border-podcast-blue pr-4 mb-4">
-                <p className="font-bold text-right">{guest.name}</p>
-                <p className="text-sm text-podcast-gray mb-2 text-right leading-relaxed">{guest.role}</p>
+                <p className="font-bold text-right">{convertToEasternNumerals(guest.name)}</p>
+                <p className="text-sm text-podcast-gray mb-2 text-right leading-relaxed">
+                  {convertToEasternNumerals(guest.role)}
+                </p>
                 <div className="flex flex-wrap gap-2 justify-end">
                   {guest.topics.map((topic: string, topicIndex: number) => (
                     <span
                       key={topicIndex}
                       className="bg-podcast-blue/10 text-podcast-blue px-3 py-1 rounded-full text-xs font-medium"
                     >
-                      {topic}
+                      {convertToEasternNumerals(topic)}
                     </span>
                   ))}
                 </div>
@@ -157,14 +201,16 @@ const WorkArea = () => {
               <h4 className="font-bold mb-3 text-podcast-blue text-right">المعدات المطلوبة</h4>
               <ul className="space-y-2 text-sm text-right">
                 {content.equipment.map((item: string, index: number) => (
-                  <li key={index} className="leading-relaxed">• {item}</li>
+                  <li key={index} className="leading-relaxed">• {convertToEasternNumerals(item)}</li>
                 ))}
               </ul>
             </div>
             
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
               <h4 className="font-bold mb-2 text-podcast-blue text-right">الجدول الزمني</h4>
-              <p className="text-sm text-podcast-gray text-right leading-relaxed">{content.timeline}</p>
+              <p className="text-sm text-podcast-gray text-right leading-relaxed">
+                {convertToEasternNumerals(content.timeline)}
+              </p>
             </div>
           </div>
         </div>
@@ -174,9 +220,19 @@ const WorkArea = () => {
     if (activeTab === 'script') {
       return (
         <div className="space-y-6">
+          {/* Episode Duration Estimate Chip */}
+          <div className="flex justify-center mb-4">
+            <div className="bg-podcast-gold/10 border border-podcast-gold/30 text-podcast-gold-dark px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>{convertToEasternNumerals('تقدير مدة الحلقة: ≈ 30 دقيقة')}</span>
+            </div>
+          </div>
+
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
             <h4 className="font-bold mb-4 text-podcast-blue text-right">المقدمة</h4>
-            <p className="text-sm leading-relaxed bg-white p-4 rounded-lg border text-right">{content.intro}</p>
+            <p className="text-sm leading-relaxed bg-white p-4 rounded-lg border text-right">
+              {convertToEasternNumerals(content.intro)}
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -184,19 +240,25 @@ const WorkArea = () => {
             {content.sections.map((section: any, index: number) => (
               <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <div className="flex justify-between items-start mb-3 flex-row-reverse">
-                  <h5 className="font-bold text-podcast-blue text-right">{section.title}</h5>
+                  <h5 className="font-bold text-podcast-blue text-right">
+                    {convertToEasternNumerals(section.title)}
+                  </h5>
                   <span className="text-xs bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full font-medium">
-                    {section.duration}
+                    {convertToEasternNumerals(section.duration)}
                   </span>
                 </div>
-                <p className="text-sm text-podcast-gray text-right leading-relaxed">{section.content}</p>
+                <p className="text-sm text-podcast-gray text-right leading-relaxed">
+                  {convertToEasternNumerals(section.content)}
+                </p>
               </div>
             ))}
           </div>
 
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
             <h4 className="font-bold mb-4 text-podcast-blue text-right">الخاتمة</h4>
-            <p className="text-sm leading-relaxed bg-white p-4 rounded-lg border text-right">{content.outro}</p>
+            <p className="text-sm leading-relaxed bg-white p-4 rounded-lg border text-right">
+              {convertToEasternNumerals(content.outro)}
+            </p>
           </div>
         </div>
       );
@@ -208,7 +270,7 @@ const WorkArea = () => {
   const renderSource = (content: any) => {
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 font-mono text-sm overflow-auto">
-        <pre className="text-right">{JSON.stringify(content, null, 2)}</pre>
+        <pre className="text-right">{convertToEasternNumerals(JSON.stringify(content, null, 2))}</pre>
       </div>
     );
   };
@@ -229,38 +291,65 @@ const WorkArea = () => {
               }`}
             >
               {tab.icon}
-              <span>{tab.title}</span>
+              <span>{convertToEasternNumerals(tab.title)}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* View Mode Toggle */}
+      {/* View Mode Toggle and Controls */}
       <div className="p-4 border-b border-podcast-border">
-        <div className="flex justify-center">
-          <div className="bg-gray-100 border border-gray-200 rounded-lg p-1 flex gap-1">
-            <button
-              onClick={() => setViewMode('preview')}
-              className={`px-4 py-2 rounded text-sm transition-all flex items-center gap-2 font-medium ${
-                viewMode === 'preview' 
-                  ? 'bg-podcast-blue text-white shadow-sm font-bold' 
-                  : 'text-podcast-gray hover:bg-white cursor-pointer'
-              }`}
-            >
-              <Eye className="w-3 h-3" />
-              معاينة
-            </button>
-            <button
-              onClick={() => setViewMode('source')}
-              className={`px-4 py-2 rounded text-sm transition-all flex items-center gap-2 font-medium ${
-                viewMode === 'source' 
-                  ? 'bg-podcast-blue text-white shadow-sm font-bold' 
-                  : 'text-podcast-gray hover:bg-white cursor-pointer'
-              }`}
-            >
-              <Code className="w-3 h-3" />
-              مصدر
-            </button>
+        <div className="flex justify-between items-center">
+          {/* Language Toggle */}
+          <button
+            onClick={() => setIsEasternNumerals(!isEasternNumerals)}
+            className="bg-gray-100 hover:bg-gray-200 border border-gray-200 px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 font-medium text-podcast-gray hover:text-podcast-blue"
+          >
+            <Languages className="w-3 h-3" />
+            <span>تبديل اللغة</span>
+          </button>
+
+          <div className="flex items-center gap-4">
+            {/* Copy JSON Button (only in source mode) */}
+            {viewMode === 'source' && (
+              <button
+                onClick={copyToClipboard}
+                className={`px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 font-medium ${
+                  copySuccess 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                    : 'bg-gray-100 hover:bg-gray-200 border border-gray-200 text-podcast-gray hover:text-podcast-blue'
+                }`}
+              >
+                <Copy className="w-3 h-3" />
+                <span>{copySuccess ? 'تم النسخ!' : 'نسخ JSON'}</span>
+              </button>
+            )}
+
+            {/* View Mode Toggle */}
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-1 flex gap-1">
+              <button
+                onClick={() => setViewMode('preview')}
+                className={`px-4 py-2 rounded text-sm transition-all flex items-center gap-2 font-medium ${
+                  viewMode === 'preview' 
+                    ? 'bg-podcast-blue text-white shadow-sm font-bold' 
+                    : 'text-podcast-gray hover:bg-white cursor-pointer'
+                }`}
+              >
+                <Eye className="w-3 h-3" />
+                معاينة
+              </button>
+              <button
+                onClick={() => setViewMode('source')}
+                className={`px-4 py-2 rounded text-sm transition-all flex items-center gap-2 font-medium ${
+                  viewMode === 'source' 
+                    ? 'bg-podcast-blue text-white shadow-sm font-bold' 
+                    : 'text-podcast-gray hover:bg-white cursor-pointer'
+                }`}
+              >
+                <Code className="w-3 h-3" />
+                مصدر
+              </button>
+            </div>
           </div>
         </div>
       </div>
