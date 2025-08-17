@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
-import { MessageCircle, Send, Loader2 } from 'lucide-react';
+import { MessageCircle, Send, Loader2, Copy, ArrowRight } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
+import { useDocumentContext } from '../contexts/DocumentContext';
+import { sessionManager } from '../utils/sessionManager';
 
 const AIChatPanel = () => {
   const [inputValue, setInputValue] = useState('');
+  const [showSessionMenu, setShowSessionMenu] = useState(false);
+  
   const { 
     messages, 
     isLoading, 
@@ -12,8 +16,13 @@ const AIChatPanel = () => {
     setChatMode, 
     sendMessage, 
     applyToDocument, 
-    saveAsNoteAction
+    saveAsNoteAction,
+    getCurrentSessionName,
+    currentSessionKey,
+    copyMessageToSession
   } = useAIChat();
+
+  const { activeDocument } = useDocumentContext();
 
   const handleSend = async () => {
     if (inputValue.trim() && !isLoading) {
@@ -31,23 +40,35 @@ const AIChatPanel = () => {
 
   const handleApplyToDocument = (content: string) => {
     applyToDocument(content);
-    // Show success feedback
     console.log('Applied to document:', content);
   };
 
   const handleSaveAsNote = (content: string) => {
     saveAsNoteAction(content);
-    // Show success feedback
     console.log('Saved as note:', content);
+  };
+
+  const handleCopyMessage = (messageId: string, content: string) => {
+    // For now, just copy to clipboard and show feedback
+    navigator.clipboard.writeText(content).then(() => {
+      console.log('Message copied to clipboard');
+    });
   };
 
   return (
     <div className="podcast-panel h-full flex flex-col">
-      {/* Header */}
+      {/* Header with Session Indicator */}
       <div className="podcast-header px-4 py-3 rounded-t-xl">
-        <div className="flex items-center gap-2">
-          <MessageCircle className="w-5 h-5" />
-          <h2 className="font-bold text-right">الدردشة مع الذكاء الاصطناعي</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            <h2 className="font-bold text-right">الدردشة مع الذكاء الاصطناعي</h2>
+          </div>
+          
+          {/* Session Indicator */}
+          <div className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium">
+            جلسة: {getCurrentSessionName()}
+          </div>
         </div>
       </div>
 
@@ -58,6 +79,9 @@ const AIChatPanel = () => {
             {messages.length === 0 && (
               <div className="text-center text-podcast-gray py-8">
                 <p className="text-sm">ابدأ محادثة مع الذكاء الاصطناعي لمساعدتك في إنتاج البودكاست</p>
+                <p className="text-xs mt-2 opacity-75">
+                  الجلسة الحالية: {getCurrentSessionName()}
+                </p>
               </div>
             )}
             
@@ -70,23 +94,39 @@ const AIChatPanel = () => {
                       : 'bg-gray-50 ml-8 border border-gray-200'
                   }`}
                 >
-                  <div className="text-sm font-bold mb-2 text-podcast-gray text-right">
-                    {message.role === 'user' ? 'المُنتِج' : 'AI'}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-bold text-podcast-gray text-right">
+                      {message.role === 'user' ? 'المُنتِج' : 'AI'}
+                    </div>
+                    
+                    {/* Message Actions */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleCopyMessage(message.id, message.content)}
+                        className="p-1 hover:bg-podcast-blue/10 rounded text-podcast-gray hover:text-podcast-blue transition-colors"
+                        title="نسخ الرسالة"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
+                  
                   <div className="text-sm leading-relaxed text-right whitespace-pre-line">
                     {message.content}
                   </div>
                 </div>
                 
-                {/* Pill buttons after AI message */}
+                {/* Enhanced Action Buttons for AI Messages */}
                 {message.role === 'assistant' && index === messages.length - 1 && !isLoading && (
-                  <div className="flex gap-2 mt-3 mr-8 justify-end">
+                  <div className="flex gap-2 mt-3 mr-8 justify-end flex-wrap">
                     <button
                       onClick={() => handleApplyToDocument(message.content)}
-                      className="bg-podcast-blue/10 hover:bg-podcast-blue/20 text-podcast-blue px-4 py-2 rounded-full text-sm transition-colors font-medium"
+                      className="bg-podcast-blue/10 hover:bg-podcast-blue/20 text-podcast-blue px-4 py-2 rounded-full text-sm transition-colors font-medium flex items-center gap-1"
                     >
-                      تطبيق على الوثيقة
+                      <ArrowRight className="w-3 h-3" />
+                      إضافة للمحرر
                     </button>
+                    
                     <button
                       onClick={() => handleSaveAsNote(message.content)}
                       className="bg-podcast-gold/10 hover:bg-podcast-gold/20 text-podcast-gold-dark px-4 py-2 rounded-full text-sm transition-colors font-medium"
@@ -110,12 +150,13 @@ const AIChatPanel = () => {
             )}
           </div>
         </div>
+        
         {/* Scroll shadows */}
         <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
       </div>
 
-      {/* Toggle Above Input */}
+      {/* Mode Toggle Above Input */}
       <div className="px-4 pb-3 border-t border-podcast-border pt-4">
         <div className="flex items-center gap-6 justify-center text-sm">
           <button
