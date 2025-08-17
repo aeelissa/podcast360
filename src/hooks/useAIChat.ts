@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { ChatMessage, ChatMode } from '../types/chat';
 import { aiService } from '../services/aiService';
@@ -91,7 +90,10 @@ ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostN
     try {
       const enhancedContext = buildEnhancedContext();
       const documentType = getCurrentSectionKey();
-      const systemPrompt = getSystemPrompt(documentType, enhancedContext);
+      
+      // Handle the 'global' case by using a fallback document type or general prompt
+      const promptDocumentType = documentType === 'global' ? 'concept' : documentType;
+      const systemPrompt = getSystemPrompt(promptDocumentType, enhancedContext);
 
       const systemMessage = {
         role: 'system' as const,
