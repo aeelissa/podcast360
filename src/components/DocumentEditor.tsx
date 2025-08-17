@@ -10,7 +10,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { $getRoot, $insertNodes, $createParagraphNode, $createTextNode } from 'lexical';
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
-import { HeadingNode } from '@lexical/rich-text';
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
 import { Document } from '../types/document';
 import DocumentToolbar from './DocumentToolbar';
@@ -53,6 +53,7 @@ const theme = {
   text: {
     bold: 'font-bold',
     italic: 'italic',
+    underline: 'underline',
   },
   heading: {
     h1: 'text-2xl font-bold text-podcast-blue mb-4 text-right',
@@ -68,6 +69,7 @@ const theme = {
     listitem: 'mb-1',
   },
   paragraph: 'mb-2 text-right leading-relaxed',
+  quote: 'border-r-4 border-podcast-blue pl-4 italic text-podcast-gray',
 };
 
 const DocumentEditor: React.FC<DocumentEditorProps> = ({ 
@@ -81,7 +83,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
     onError: (error: Error) => {
       console.error('Lexical error:', error);
     },
-    nodes: [HeadingNode, ListNode, ListItemNode],
+    nodes: [HeadingNode, ListNode, ListItemNode, QuoteNode],
   };
 
   const handleContentChange = (editorState: any) => {
@@ -92,23 +94,20 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       <LexicalComposer initialConfig={initialConfig}>
         <DocumentToolbar saveStatus={saveStatus} />
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           <RichTextPlugin
             contentEditable={
-              <div className="h-full overflow-y-auto">
-                <ContentEditable 
-                  className="h-full p-6 outline-none text-right resize-none leading-relaxed"
-                  style={{ 
-                    direction: 'rtl',
-                    minHeight: '100%',
-                    fontFamily: 'inherit'
-                  }}
-                />
-              </div>
+              <ContentEditable 
+                className="min-h-full p-6 outline-none text-right resize-none leading-relaxed focus:outline-none"
+                style={{ 
+                  direction: 'rtl',
+                  fontFamily: 'inherit'
+                }}
+              />
             }
             placeholder={
               <div className="absolute top-6 right-6 text-podcast-gray pointer-events-none">
