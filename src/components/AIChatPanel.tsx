@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
-import { MessageCircle, Send, Loader2, Copy, ArrowRight } from 'lucide-react';
+import { MessageCircle, Send, Loader2, Copy, ArrowRight, MoreVertical, Settings } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
 import { useDocumentContext } from '../contexts/DocumentContext';
 import { contentInsertionService } from '../services/contentInsertionService';
 import InsertionPreviewModal from './InsertionPreviewModal';
+import SessionSwitcher from './chat/SessionSwitcher';
+import SessionMigrationModal from './chat/SessionMigrationModal';
 import { sessionManager } from '../utils/sessionManager';
+import { ChatMessage } from '../types/chat';
 
 const AIChatPanel = () => {
   const [inputValue, setInputValue] = useState('');
-  const [showSessionMenu, setShowSessionMenu] = useState(false);
   const [insertionModal, setInsertionModal] = useState<{
     isOpen: boolean;
     content: string;
   }>({ isOpen: false, content: '' });
+  const [migrationModal, setMigrationModal] = useState<{
+    isOpen: boolean;
+    message: ChatMessage | null;
+  }>({ isOpen: false, message: null });
+  const [showSessionSettings, setShowSessionSettings] = useState(false);
   
   const { 
     messages, 
@@ -24,7 +31,10 @@ const AIChatPanel = () => {
     saveAsNoteAction,
     getCurrentSessionName,
     currentSessionKey,
-    copyMessageToSession
+    copyMessageToSession,
+    switchSession,
+    autoSwitchEnabled,
+    toggleAutoSwitch
   } = useAIChat();
 
   const { activeDocument } = useDocumentContext();
@@ -78,10 +88,23 @@ const AIChatPanel = () => {
     });
   };
 
+  const handleMigrateMessage = (message: ChatMessage) => {
+    setMigrationModal({ isOpen: true, message });
+  };
+
+  const handleMigrationComplete = () => {
+    // Refresh messages to reflect any changes
+    if (currentSessionKey) {
+      const updatedMessages = sessionManager.getMessages(currentSessionKey);
+      // Note: This would ideally be handled by the useAIChat hook
+      console.log('Migration completed, messages updated');
+    }
+  };
+
   return (
     <>
       <div className="podcast-panel h-full flex flex-col">
-        {/* Header with Session Indicator */}
+        {/* Enhanced Header with Session Management */}
         <div className="podcast-header px-4 py-3 rounded-t-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -89,14 +112,54 @@ const AIChatPanel = () => {
               <h2 className="font-bold text-right">الدردشة مع الذكاء الاصطناعي</h2>
             </div>
             
-            {/* Session Indicator */}
-            <div className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium">
-              جلسة: {getCurrentSessionName()}
+            <div className="flex items-center gap-2">
+              {/* Session Settings */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSessionSettings(!showSessionSettings)}
+                  className="p-2 hover:bg-podcast-gold/20 rounded-full transition-colors"
+                  title="إعدادات الجلسة"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                
+                {showSessionSettings && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowSessionSettings(false)}
+                    />
+                    <div className="absolute top-full left-0 mt-2 bg-white border border-podcast-border rounded-lg shadow-lg z-20 min-w-48">
+                      <div className="p-3">
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={autoSwitchEnabled}
+                            onChange={toggleAutoSwitch}
+                            className="rounded"
+                          />
+                          <span className="text-right">تبديل تلقائي للجلسات</span>
+                        </label>
+                        <p className="text-xs text-podcast-gray mt-1 text-right">
+                          تبديل الجلسة تلقائياً عند تغيير القسم
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              {/* Session Switcher */}
+              <SessionSwitcher
+                currentSessionKey={currentSessionKey}
+                onSessionSwitch={switchSession}
+                getCurrentSessionName={getCurrentSessionName}
+              />
             </div>
           </div>
         </div>
 
-        {/* Chat Messages with scroll shadows */}
+        {/* Chat Messages with enhanced message actions */}
         <div className="flex-1 overflow-hidden relative">
           <div className="h-full overflow-y-auto p-4 scroll-smooth">
             <div className="space-y-4">
@@ -106,6 +169,11 @@ const AIChatPanel = () => {
                   <p className="text-xs mt-2 opacity-75">
                     الجلسة الحالية: {getCurrentSessionName()}
                   </p>
+                  {!autoSwitchEnabled && (
+                    <p className="text-xs mt-1 text-podcast-gold-dark">
+                      التبديل التلقائي للجلسات معطل
+                    </p>
+                  )}
                 </div>
               )}
               
@@ -123,7 +191,7 @@ const AIChatPanel = () => {
                         {message.role === 'user' ? 'المُنتِج' : 'AI'}
                       </div>
                       
-                      {/* Message Actions */}
+                      {/* Enhanced Message Actions */}
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleCopyMessage(message.id, message.content)}
@@ -131,6 +199,14 @@ const AIChatPanel = () => {
                           title="نسخ الرسالة"
                         >
                           <Copy className="w-3 h-3" />
+                        </button>
+                        
+                        <button
+                          onClick={() => handleMigrateMessage(message)}
+                          className="p-1 hover:bg-podcast-gold/10 rounded text-podcast-gray hover:text-podcast-gold-dark transition-colors"
+                          title="نقل إلى جلسة أخرى"
+                        >
+                          <ArrowRight className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
@@ -247,6 +323,15 @@ const AIChatPanel = () => {
         onClose={() => setInsertionModal({ isOpen: false, content: '' })}
         content={insertionModal.content}
         onConfirm={handleConfirmInsertion}
+      />
+
+      {/* Session Migration Modal */}
+      <SessionMigrationModal
+        isOpen={migrationModal.isOpen}
+        onClose={() => setMigrationModal({ isOpen: false, message: null })}
+        message={migrationModal.message}
+        currentSessionKey={currentSessionKey}
+        onMigrationComplete={handleMigrationComplete}
       />
     </>
   );

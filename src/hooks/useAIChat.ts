@@ -11,6 +11,7 @@ export const useAIChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>('document');
   const [currentSessionKey, setCurrentSessionKey] = useState<SessionKey | null>(null);
+  const [autoSwitchEnabled, setAutoSwitchEnabled] = useState(true);
   
   const { 
     activeDocument, 
@@ -18,14 +19,42 @@ export const useAIChat = () => {
     saveAsNote, 
     getDocumentSections,
     getFullDocumentContent,
-    getCurrentSectionKey
+    getCurrentSectionKey,
+    currentSection
   } = useDocumentContext();
   
   const { settings } = usePodcastSettings();
 
-  // Update session when document changes
+  // Auto-switch session when document or section changes
   useEffect(() => {
-    if (activeDocument) {
+    if (activeDocument && autoSwitchEnabled) {
+      const detectedSectionKey = getCurrentSectionKey();
+      const newSessionKey: SessionKey = {
+        documentId: activeDocument.id,
+        sectionKey: detectedSectionKey
+      };
+      
+      // Only switch if the session actually changed
+      if (!currentSessionKey || 
+          currentSessionKey.documentId !== newSessionKey.documentId ||
+          currentSessionKey.sectionKey !== newSessionKey.sectionKey) {
+        
+        console.log('Auto-switching session:', {
+          from: currentSessionKey,
+          to: newSessionKey,
+          reason: 'document/section change'
+        });
+        
+        setCurrentSessionKey(newSessionKey);
+        const sessionMessages = sessionManager.getMessages(newSessionKey);
+        setMessages(sessionMessages);
+      }
+    }
+  }, [activeDocument, getCurrentSectionKey, currentSection, autoSwitchEnabled, currentSessionKey]);
+
+  // Manual session update when document changes but auto-switch is disabled
+  useEffect(() => {
+    if (activeDocument && !autoSwitchEnabled && !currentSessionKey) {
       const newSessionKey: SessionKey = {
         documentId: activeDocument.id,
         sectionKey: getCurrentSectionKey()
@@ -35,7 +64,7 @@ export const useAIChat = () => {
       const sessionMessages = sessionManager.getMessages(newSessionKey);
       setMessages(sessionMessages);
     }
-  }, [activeDocument, getCurrentSectionKey]);
+  }, [activeDocument, getCurrentSectionKey, autoSwitchEnabled, currentSessionKey]);
 
   const buildEnhancedContext = useCallback(() => {
     if (!activeDocument) return '';
@@ -151,10 +180,11 @@ ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostN
   }, [saveAsNote]);
 
   const switchSession = useCallback((newSessionKey: SessionKey) => {
+    console.log('Manual session switch:', { from: currentSessionKey, to: newSessionKey });
     setCurrentSessionKey(newSessionKey);
     const sessionMessages = sessionManager.getMessages(newSessionKey);
     setMessages(sessionMessages);
-  }, []);
+  }, [currentSessionKey]);
 
   const copyMessageToSession = useCallback((message: ChatMessage, targetSessionKey: SessionKey) => {
     if (currentSessionKey) {
@@ -166,6 +196,15 @@ ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostN
     if (!currentSessionKey) return 'جلسة عامة';
     return sessionManager.getSectionDisplayName(currentSessionKey.sectionKey);
   }, [currentSessionKey]);
+
+  const getAllSessions = useCallback(() => {
+    if (!activeDocument) return [];
+    return sessionManager.getAllSessionsForDocument(activeDocument.id);
+  }, [activeDocument]);
+
+  const toggleAutoSwitch = useCallback(() => {
+    setAutoSwitchEnabled(prev => !prev);
+  }, []);
 
   return {
     messages,
@@ -179,6 +218,9 @@ ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostN
     copyMessageToSession,
     getCurrentSessionName,
     currentSessionKey,
+    getAllSessions,
+    autoSwitchEnabled,
+    toggleAutoSwitch,
     isAIConfigured: aiService.isConfigured()
   };
 };
