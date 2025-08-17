@@ -83,8 +83,8 @@ const AIChatPanel = () => {
     console.log('Saved as note:', content);
   };
 
-  const handleCopyMessage = (messageId: string, content: string) => {
-    // For now, just copy to clipboard and show feedback
+  const handleCopyMessage = (content: string) => {
+    // Copy to clipboard and show feedback
     navigator.clipboard.writeText(content).then(() => {
       console.log('Message copied to clipboard');
     });
@@ -106,7 +106,7 @@ const AIChatPanel = () => {
   const handleEnhancedAction = (actionType: string, content: string) => {
     const context = {
       documentType: activeDocument?.type,
-      currentSection: getCurrentSectionName(),
+      currentSection: getCurrentSessionName(),
     };
 
     const processedResponse = aiResponseProcessor.processResponse(content, context);
