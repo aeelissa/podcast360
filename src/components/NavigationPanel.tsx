@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download, X } from 'lucide-react';
+import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download, X, Edit3 } from 'lucide-react';
+import { usePodcastSettings } from '../contexts/PodcastSettingsContext';
+import PodcastSettingsPanel from './PodcastSettingsPanel';
 
 interface NavigationPanelProps {
   isVisible: boolean;
@@ -8,6 +10,8 @@ interface NavigationPanelProps {
 }
 
 const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose }) => {
+  const { settings } = usePodcastSettings();
+
   const navigationItems = [
     { icon: <FileText className="w-4 h-4" />, label: 'المشاريع', active: true },
     { icon: <Mic className="w-4 h-4" />, label: 'التسجيلات', active: false },
@@ -22,22 +26,10 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
   ];
 
   const podcastBrainData = [
-    { label: 'نبرة', value: 'ودودة ومهنية' },
-    { label: 'أسلوب', value: 'تفاعلي وتعليمي' },
-    { label: 'جمهور', value: 'المهتمين بالتكنولوجيا' },
-    { label: 'لغة العلامة', value: 'عربية فصحى معاصرة' },
-  ];
-
-  const episodeGoals = [
-    'تعريف المستمعين بالذكاء الاصطناعي',
-    'شرح فوائد التكنولوجيا الحديثة',
-    'تقديم نصائح عملية للاستخدام'
-  ];
-
-  const successCriteria = [
-    'زيادة المشاركة بنسبة 25%',
-    'الحصول على تقييم 4.5 نجوم أو أكثر',
-    'تحقيق 1000 استماع في الأسبوع الأول'
+    { label: 'نبرة', value: settings.identity.tone },
+    { label: 'أسلوب', value: settings.identity.style.join(' و ') },
+    { label: 'جمهور', value: settings.identity.audience },
+    { label: 'لغة العلامة', value: settings.identity.brandVoice },
   ];
 
   if (!isVisible) return null;
@@ -96,7 +88,14 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
           {/* Podcast Brain Section */}
           <div className="p-4 border-b border-podcast-border">
             <div className="flex items-center gap-2 mb-3 justify-end">
-              <span className="text-xs text-podcast-gray/60">(اقرأ فقط)</span>
+              <PodcastSettingsPanel 
+                trigger={
+                  <button className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors flex items-center gap-1">
+                    <Edit3 className="w-3 h-3" />
+                    تحرير
+                  </button>
+                }
+              />
               <h3 className="font-bold text-podcast-gray text-sm">Podcast Brain</h3>
             </div>
             <div className="space-y-2">
@@ -112,7 +111,14 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
           {/* Episode Brain Section */}
           <div className="p-4 border-b border-podcast-border">
             <div className="flex items-center gap-2 mb-3 justify-end">
-              <span className="text-xs text-podcast-gray/60">(اقرأ فقط)</span>
+              <PodcastSettingsPanel 
+                trigger={
+                  <button className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors flex items-center gap-1">
+                    <Edit3 className="w-3 h-3" />
+                    تحرير
+                  </button>
+                }
+              />
               <h3 className="font-bold text-podcast-gray text-sm">Episode Brain</h3>
             </div>
             
@@ -120,7 +126,7 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
             <div className="mb-4">
               <h4 className="text-xs font-bold text-podcast-blue mb-2 text-right">أهداف الحلقة</h4>
               <div className="space-y-2">
-                {episodeGoals.map((goal, index) => (
+                {settings.episode.goals.map((goal, index) => (
                   <div key={index} className="flex items-start gap-2 text-right">
                     <span className="text-xs text-podcast-gray leading-relaxed">{goal}</span>
                     <div className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-1.5 flex-shrink-0"></div>
@@ -133,7 +139,7 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
             <div>
               <h4 className="text-xs font-bold text-podcast-blue mb-2 text-right">معايير النجاح</h4>
               <div className="space-y-2">
-                {successCriteria.map((criteria, index) => (
+                {settings.episode.successCriteria.map((criteria, index) => (
                   <div key={index} className="flex items-start gap-2 text-right">
                     <span className="text-xs text-podcast-gray leading-relaxed">{criteria}</span>
                     <div className="w-1.5 h-1.5 bg-podcast-gold rounded-full mt-1.5 flex-shrink-0"></div>
@@ -154,7 +160,6 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
             </div>
           </div>
 
-          {/* Action Buttons Section */}
           <div className="p-4 border-b border-podcast-border">
             <div className="space-y-2">
               <button
@@ -181,10 +186,9 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
             </div>
           </div>
 
-          {/* Project Info Section */}
           <div className="p-4">
             <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-4">
-              <h4 className="font-bold text-podcast-blue mb-1 text-sm text-right">Podcast360 - MVP</h4>
+              <h4 className="font-bold text-podcast-blue mb-1 text-sm text-right">{settings.identity.showName} - MVP</h4>
               <p className="text-xs text-podcast-gray text-right leading-relaxed">مشروع تجريبي لمنصة البودكاست</p>
               <div className="mt-3 flex items-center gap-2 justify-end">
                 <span className="text-xs text-podcast-gray">متصل</span>

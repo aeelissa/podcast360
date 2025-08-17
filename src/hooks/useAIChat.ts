@@ -3,12 +3,14 @@ import { useState, useCallback } from 'react';
 import { ChatMessage, ChatMode } from '../types/chat';
 import { aiService } from '../services/aiService';
 import { useDocumentContext } from '../contexts/DocumentContext';
+import { usePodcastSettings } from '../contexts/PodcastSettingsContext';
 
 export const useAIChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [chatMode, setChatMode] = useState<ChatMode>('document');
   const { activeDocument, insertContentAtCursor, saveAsNote } = useDocumentContext();
+  const { settings } = usePodcastSettings();
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
@@ -24,13 +26,35 @@ export const useAIChat = () => {
     setIsLoading(true);
 
     try {
-      // Build context for AI - convert to the format expected by aiService
+      // Build enhanced context for AI with user settings
+      const podcastContext = `
+        معلومات البودكاست:
+        - اسم البودكاست: ${settings.identity.showName}
+        - نبرة البودكاست: ${settings.identity.tone}
+        - أسلوب التقديم: ${settings.identity.style.join(', ')}
+        - الجمهور المستهدف: ${settings.identity.audience}
+        - لغة العلامة التجارية: ${settings.identity.brandVoice}
+        ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostName}` : ''}
+        
+        إعدادات الحلقة:
+        - نوع المحتوى: ${settings.episode.contentType}
+        - المدة المتوقعة: ${settings.episode.duration} دقيقة
+        - أهداف الحلقة: ${settings.episode.goals.join(', ')}
+        - معايير النجاح: ${settings.episode.successCriteria.join(', ')}
+      `;
+
       const systemMessage = {
         role: 'system' as const,
         content: `أنت مساعد ذكي متخصص في إنتاج البودكاست. تساعد المستخدمين في إنشاء وتطوير محتوى البودكاست باللغة العربية. 
+        
+        ${podcastContext}
+        
         ${activeDocument ? `المستخدم يعمل حالياً على: ${activeDocument.type === 'concept' ? 'ورقة التصور' : activeDocument.type === 'preparation' ? 'ورقة الإعداد' : 'ورقة السكربت'}` : ''}
         ${activeDocument?.content ? `محتوى الوثيقة الحالية: ${activeDocument.content.substring(0, 500)}...` : ''}
-        قدم اقتراحات مفيدة ومحددة يمكن تطبيقها مباشرة على الوثيقة.`
+        
+        التزم بنبرة البودكاست المحددة (${settings.identity.tone}) واستخدم أسلوب التقديم المناسب (${settings.identity.style.join(', ')}). راعِ الجمهور المستهدف (${settings.identity.audience}) واستخدم لغة العلامة التجارية (${settings.identity.brandVoice}).
+        
+        قدم اقتراحات مفيدة ومحددة يمكن تطبيقها مباشرة على الوثيقة وتتماشى مع أهداف الحلقة ومعايير النجاح المحددة.`
       };
 
       const aiMessages = [
@@ -64,7 +88,7 @@ export const useAIChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, activeDocument, insertContentAtCursor, saveAsNote]);
+  }, [messages, activeDocument, insertContentAtCursor, saveAsNote, settings]);
 
   const applyToDocument = useCallback((content: string) => {
     insertContentAtCursor(content);
