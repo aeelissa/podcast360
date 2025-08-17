@@ -1,13 +1,15 @@
 
-interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
+import { ChatMessage } from '../types/chat';
 
 interface AIServiceConfig {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+}
+
+interface AIMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
 }
 
 class AIService {
@@ -25,7 +27,7 @@ class AIService {
   }
 
   async chat(
-    messages: ChatMessage[],
+    messages: AIMessage[],
     config: AIServiceConfig = {}
   ): Promise<string> {
     if (!this.apiKey) {

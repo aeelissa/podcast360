@@ -24,7 +24,7 @@ export const useAIChat = () => {
     setIsLoading(true);
 
     try {
-      // Build context for AI
+      // Build context for AI - convert to the format expected by aiService
       const systemMessage = {
         role: 'system' as const,
         content: `أنت مساعد ذكي متخصص في إنتاج البودكاست. تساعد المستخدمين في إنشاء وتطوير محتوى البودكاست باللغة العربية. 
@@ -33,13 +33,16 @@ export const useAIChat = () => {
         قدم اقتراحات مفيدة ومحددة يمكن تطبيقها مباشرة على الوثيقة.`
       };
 
-      const chatMessages = [
+      const aiMessages = [
         systemMessage,
-        ...messages.slice(-10).map(msg => ({ role: msg.role, content: msg.content })),
-        { role: 'user', content }
+        ...messages.slice(-10).map(msg => ({ 
+          role: msg.role === 'user' ? 'user' as const : 'assistant' as const, 
+          content: msg.content 
+        })),
+        { role: 'user' as const, content }
       ];
 
-      const response = await aiService.chat(chatMessages);
+      const response = await aiService.chat(aiMessages);
 
       const aiMessage: ChatMessage = {
         id: `msg_${Date.now() + 1}`,
