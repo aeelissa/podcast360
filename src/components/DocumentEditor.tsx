@@ -107,11 +107,14 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
                     minHeight: '100%',
                     fontFamily: 'inherit'
                   }}
-                  placeholder="ابدأ الكتابة هنا..."
                 />
               </div>
             }
-            placeholder={null}
+            placeholder={
+              <div className="absolute top-6 right-6 text-podcast-gray pointer-events-none">
+                ابدأ الكتابة هنا...
+              </div>
+            }
             ErrorBoundary={LexicalErrorBoundary}
           />
           
