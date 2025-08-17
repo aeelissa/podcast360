@@ -89,12 +89,22 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
   };
 
   const insertContentAtCursor = (content: string) => {
-    console.log('Inserting content at cursor:', content);
+    console.log('DocumentContext: Inserting content at cursor:', content);
     if (activeDocument) {
-      // Smart insertion logic - for now append with proper spacing
+      // Enhanced insertion logic - try to be smarter about placement
       const existingContent = activeDocument.content;
-      const separator = existingContent.trim() ? '\n\n' : '';
-      const updatedContent = existingContent + separator + content;
+      let updatedContent: string;
+      
+      if (cursorPosition !== null && cursorPosition >= 0) {
+        // Insert at specific cursor position if available
+        updatedContent = existingContent.slice(0, cursorPosition) + 
+          '\n\n' + content + '\n\n' + 
+          existingContent.slice(cursorPosition);
+      } else {
+        // Fallback to appending with proper spacing
+        const separator = existingContent.trim() ? '\n\n' : '';
+        updatedContent = existingContent + separator + content;
+      }
       
       setActiveDocument({
         ...activeDocument,

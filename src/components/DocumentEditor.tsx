@@ -13,6 +13,8 @@ import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
 import { Document } from '../types/document';
+import { CursorTrackingPlugin } from './editor/CursorTrackingPlugin';
+import { contentInsertionService } from '../services/contentInsertionService';
 import DocumentToolbar from './DocumentToolbar';
 
 interface DocumentEditorProps {
@@ -93,6 +95,20 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
     });
   };
 
+  // Plugin to register the editor with content insertion service
+  function EditorRegistrationPlugin() {
+    const [editor] = useLexicalComposerContext();
+    
+    useEffect(() => {
+      contentInsertionService.setEditor(editor);
+      return () => {
+        // Cleanup would go here if needed
+      };
+    }, [editor]);
+    
+    return null;
+  }
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <LexicalComposer initialConfig={initialConfig}>
@@ -121,6 +137,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
           <ListPlugin />
           <OnChangePlugin onChange={handleContentChange} />
           <InitialContentPlugin content={document.content} />
+          <CursorTrackingPlugin />
+          <EditorRegistrationPlugin />
         </div>
       </LexicalComposer>
     </div>
