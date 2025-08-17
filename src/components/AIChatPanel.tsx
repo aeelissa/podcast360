@@ -1,33 +1,73 @@
 
 import React, { useState } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send, Loader2 } from 'lucide-react';
+import { useAIChat } from '../hooks/useAIChat';
+import { aiService } from '../services/aiService';
 
 const AIChatPanel = () => {
   const [inputValue, setInputValue] = useState('');
-  const [activeToggle, setActiveToggle] = useState<'document' | 'note'>('document');
+  const { 
+    messages, 
+    isLoading, 
+    chatMode, 
+    setChatMode, 
+    sendMessage, 
+    applyToDocument, 
+    saveAsNoteAction,
+    isAIConfigured 
+  } = useAIChat();
 
-  const chatMessages = [
-    { role: 'user', content: 'ساعدني بإضافة محور عن التسويق للحلقة.' },
-    { role: 'assistant', content: 'ممتاز! أقترح محورًا بعنوان: \'التسويق الرقمي للبودكاست\'. هل تريد إضافته مباشرة إلى ورقة التصور؟' }
-  ];
-
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      console.log('Sending message:', inputValue);
+  const handleSend = async () => {
+    if (inputValue.trim() && !isLoading) {
+      await sendMessage(inputValue);
       setInputValue('');
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
       e.preventDefault();
       handleSend();
     }
   };
 
-  const handlePillButtonClick = (action: string) => {
-    console.log(`Clicked: ${action}`);
+  const handleApplyToDocument = (content: string) => {
+    applyToDocument(content);
+    // Show success feedback
+    console.log('Applied to document:', content);
   };
+
+  const handleSaveAsNote = (content: string) => {
+    saveAsNoteAction(content);
+    // Show success feedback
+    console.log('Saved as note:', content);
+  };
+
+  const handleSetApiKey = () => {
+    const apiKey = prompt('أدخل مفتاح OpenAI API الخاص بك:');
+    if (apiKey) {
+      aiService.setApiKey(apiKey);
+      window.location.reload(); // Refresh to update UI
+    }
+  };
+
+  if (!isAIConfigured) {
+    return (
+      <div className="podcast-panel h-full flex flex-col items-center justify-center p-6 text-center">
+        <MessageCircle className="w-12 h-12 text-podcast-blue mb-4" />
+        <h3 className="text-lg font-bold text-podcast-blue mb-2">إعداد الذكاء الاصطناعي</h3>
+        <p className="text-podcast-gray mb-4 text-sm leading-relaxed">
+          لاستخدام الذكاء الاصطناعي، تحتاج إلى إعداد مفتاح OpenAI API
+        </p>
+        <button
+          onClick={handleSetApiKey}
+          className="podcast-button"
+        >
+          إعداد مفتاح API
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="podcast-panel h-full flex flex-col">
@@ -43,8 +83,14 @@ const AIChatPanel = () => {
       <div className="flex-1 overflow-hidden relative">
         <div className="h-full overflow-y-auto p-4 scroll-smooth">
           <div className="space-y-4">
-            {chatMessages.map((message, index) => (
-              <div key={index}>
+            {messages.length === 0 && (
+              <div className="text-center text-podcast-gray py-8">
+                <p className="text-sm">ابدأ محادثة مع الذكاء الاصطناعي لمساعدتك في إنتاج البودكاست</p>
+              </div>
+            )}
+            
+            {messages.map((message, index) => (
+              <div key={message.id}>
                 <div
                   className={`rounded-xl p-4 ${
                     message.role === 'user' 
@@ -55,20 +101,22 @@ const AIChatPanel = () => {
                   <div className="text-sm font-bold mb-2 text-podcast-gray text-right">
                     {message.role === 'user' ? 'المُنتِج' : 'AI'}
                   </div>
-                  <div className="text-sm leading-relaxed text-right">{message.content}</div>
+                  <div className="text-sm leading-relaxed text-right whitespace-pre-line">
+                    {message.content}
+                  </div>
                 </div>
                 
                 {/* Pill buttons after AI message */}
-                {message.role === 'assistant' && index === chatMessages.length - 1 && (
+                {message.role === 'assistant' && index === messages.length - 1 && !isLoading && (
                   <div className="flex gap-2 mt-3 mr-8 justify-end">
                     <button
-                      onClick={() => handlePillButtonClick('تطبيق على الوثيقة')}
+                      onClick={() => handleApplyToDocument(message.content)}
                       className="bg-podcast-blue/10 hover:bg-podcast-blue/20 text-podcast-blue px-4 py-2 rounded-full text-sm transition-colors font-medium"
                     >
                       تطبيق على الوثيقة
                     </button>
                     <button
-                      onClick={() => handlePillButtonClick('حفظ كملاحظة')}
+                      onClick={() => handleSaveAsNote(message.content)}
                       className="bg-podcast-gold/10 hover:bg-podcast-gold/20 text-podcast-gold-dark px-4 py-2 rounded-full text-sm transition-colors font-medium"
                     >
                       حفظ كملاحظة
@@ -77,6 +125,17 @@ const AIChatPanel = () => {
                 )}
               </div>
             ))}
+            
+            {/* Loading indicator */}
+            {isLoading && (
+              <div className="bg-gray-50 ml-8 border border-gray-200 rounded-xl p-4">
+                <div className="text-sm font-bold mb-2 text-podcast-gray text-right">AI</div>
+                <div className="flex items-center gap-2 text-podcast-gray">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">جاري الكتابة...</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {/* Scroll shadows */}
@@ -88,15 +147,15 @@ const AIChatPanel = () => {
       <div className="px-4 pb-3 border-t border-podcast-border pt-4">
         <div className="flex items-center gap-6 justify-center text-sm">
           <button
-            onClick={() => setActiveToggle('document')}
+            onClick={() => setChatMode('document')}
             className="flex items-center gap-2 text-podcast-gray hover:text-podcast-blue transition-colors"
           >
             <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-              activeToggle === 'document' 
+              chatMode === 'document' 
                 ? 'border-podcast-blue bg-podcast-blue' 
                 : 'border-podcast-gray'
             }`}>
-              {activeToggle === 'document' && (
+              {chatMode === 'document' && (
                 <div className="w-2 h-2 rounded-full bg-white"></div>
               )}
             </div>
@@ -104,15 +163,15 @@ const AIChatPanel = () => {
           </button>
           
           <button
-            onClick={() => setActiveToggle('note')}
+            onClick={() => setChatMode('note')}
             className="flex items-center gap-2 text-podcast-gray hover:text-podcast-blue transition-colors"
           >
             <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-              activeToggle === 'note' 
+              chatMode === 'note' 
                 ? 'border-podcast-blue bg-podcast-blue' 
                 : 'border-podcast-gray'
             }`}>
-              {activeToggle === 'note' && (
+              {chatMode === 'note' && (
                 <div className="w-2 h-2 rounded-full bg-white"></div>
               )}
             </div>
@@ -127,9 +186,9 @@ const AIChatPanel = () => {
           <button
             onClick={handleSend}
             className="podcast-button p-3"
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isLoading}
           >
-            <Send className="w-4 h-4" />
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
           <input
             type="text"
@@ -139,6 +198,7 @@ const AIChatPanel = () => {
             placeholder="اكتب رسالتك هنا..."
             className="podcast-input flex-1 text-right"
             dir="rtl"
+            disabled={isLoading}
           />
         </div>
       </div>

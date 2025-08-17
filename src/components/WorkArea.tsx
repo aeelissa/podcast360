@@ -1,8 +1,8 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { FileText, Settings, Code } from 'lucide-react';
 import { DocumentType } from '../types/document';
 import { useDocumentManager } from '../hooks/useDocumentManager';
+import { useDocumentContext } from '../contexts/DocumentContext';
 import DocumentEditor from './DocumentEditor';
 
 interface TabData {
@@ -21,6 +21,9 @@ const WorkArea = () => {
     getOrCreateDocument,
     updateDocumentContent
   } = useDocumentManager();
+
+  // Import document context
+  const { setActiveDocument: setContextDocument } = useDocumentContext();
 
   const tabs: TabData[] = [
     {
@@ -45,20 +48,24 @@ const WorkArea = () => {
     setActiveTab(tabId);
     const document = getOrCreateDocument(tabId);
     setActiveDocument(document);
-  }, [getOrCreateDocument, setActiveDocument]);
+    setContextDocument(document); // Update context
+  }, [getOrCreateDocument, setActiveDocument, setContextDocument]);
 
   // Handle content changes
   const handleContentChange = useCallback((content: string) => {
     if (activeDocument) {
+      const updatedDocument = { ...activeDocument, content };
       updateDocumentContent(activeDocument.id, content);
+      setContextDocument(updatedDocument); // Update context
     }
-  }, [activeDocument, updateDocumentContent]);
+  }, [activeDocument, updateDocumentContent, setContextDocument]);
 
   // Initialize active document when component mounts or tab changes
   React.useEffect(() => {
     const document = getOrCreateDocument(activeTab);
     setActiveDocument(document);
-  }, [activeTab, getOrCreateDocument, setActiveDocument]);
+    setContextDocument(document); // Update context
+  }, [activeTab, getOrCreateDocument, setActiveDocument, setContextDocument]);
 
   const currentTab = useMemo(() => 
     tabs.find(tab => tab.id === activeTab), 
