@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { 
   Bold, 
@@ -29,6 +28,8 @@ import {
 import { INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND } from '@lexical/list';
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text';
 import { $setBlocksType } from '@lexical/selection';
+import ExportButton from './ExportButton';
+import { useDocumentContext } from '../contexts/DocumentContext';
 
 interface DocumentToolbarProps {
   saveStatus: 'saved' | 'saving' | 'error';
@@ -36,6 +37,7 @@ interface DocumentToolbarProps {
 
 const DocumentToolbar: React.FC<DocumentToolbarProps> = ({ saveStatus }) => {
   const [editor] = useLexicalComposerContext();
+  const { activeDocument } = useDocumentContext();
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [fontSize, setFontSize] = useState('16');
@@ -279,9 +281,17 @@ const DocumentToolbar: React.FC<DocumentToolbarProps> = ({ saveStatus }) => {
         </button>
       </div>
 
-      <div className={`flex items-center gap-2 text-sm font-medium ${getSaveStatusColor()}`}>
-        <Save className="w-4 h-4" />
-        <span>{getSaveStatusText()}</span>
+      <div className="flex items-center gap-3">
+        {/* Export Button */}
+        {activeDocument && (
+          <ExportButton document={activeDocument} />
+        )}
+        
+        {/* Save Status */}
+        <div className={`flex items-center gap-2 text-sm font-medium ${getSaveStatusColor()}`}>
+          <Save className="w-4 h-4" />
+          <span>{getSaveStatusText()}</span>
+        </div>
       </div>
     </div>
   );
