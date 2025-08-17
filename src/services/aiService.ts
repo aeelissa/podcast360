@@ -13,30 +13,19 @@ interface AIMessage {
 }
 
 class AIService {
-  private apiKey: string | null = null;
-  private genAI: GoogleGenerativeAI | null = null;
+  private apiKey: string;
+  private genAI: GoogleGenerativeAI;
 
   constructor() {
-    // Try to get API key from environment or prompt user to set it
-    this.apiKey = this.getApiKey();
-    if (this.apiKey) {
-      this.genAI = new GoogleGenerativeAI(this.apiKey);
-    }
-  }
-
-  private getApiKey(): string | null {
-    // For now, we'll prompt user to set this via Supabase secrets
-    return null;
+    // Hardcoded API key for now
+    this.apiKey = 'AIzaSyBR05Dc_zguw9nGpJJ_IR2mtSmUu4KcTZg';
+    this.genAI = new GoogleGenerativeAI(this.apiKey);
   }
 
   async chat(
     messages: AIMessage[],
     config: AIServiceConfig = {}
   ): Promise<string> {
-    if (!this.apiKey || !this.genAI) {
-      throw new Error('Gemini API key not configured. Please set your API key.');
-    }
-
     const { model = 'gemini-1.5-flash', temperature = 0.7 } = config;
 
     try {

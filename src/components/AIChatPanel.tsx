@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, Loader2 } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
-import { aiService } from '../services/aiService';
 
 const AIChatPanel = () => {
   const [inputValue, setInputValue] = useState('');
@@ -13,8 +12,7 @@ const AIChatPanel = () => {
     setChatMode, 
     sendMessage, 
     applyToDocument, 
-    saveAsNoteAction,
-    isAIConfigured 
+    saveAsNoteAction
   } = useAIChat();
 
   const handleSend = async () => {
@@ -42,32 +40,6 @@ const AIChatPanel = () => {
     // Show success feedback
     console.log('Saved as note:', content);
   };
-
-  const handleSetApiKey = () => {
-    const apiKey = prompt('أدخل مفتاح Gemini API الخاص بك:');
-    if (apiKey) {
-      aiService.setApiKey(apiKey);
-      window.location.reload(); // Refresh to update UI
-    }
-  };
-
-  if (!isAIConfigured) {
-    return (
-      <div className="podcast-panel h-full flex flex-col items-center justify-center p-6 text-center">
-        <MessageCircle className="w-12 h-12 text-podcast-blue mb-4" />
-        <h3 className="text-lg font-bold text-podcast-blue mb-2">إعداد الذكاء الاصطناعي</h3>
-        <p className="text-podcast-gray mb-4 text-sm leading-relaxed">
-          لاستخدام الذكاء الاصطناعي، تحتاج إلى إعداد مفتاح Gemini API
-        </p>
-        <button
-          onClick={handleSetApiKey}
-          className="podcast-button"
-        >
-          إعداد مفتاح API
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="podcast-panel h-full flex flex-col">
