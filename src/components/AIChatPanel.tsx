@@ -44,7 +44,7 @@ const AIChatPanel = () => {
   };
 
   const handleSetApiKey = () => {
-    const apiKey = prompt('أدخل مفتاح OpenAI API الخاص بك:');
+    const apiKey = prompt('أدخل مفتاح Gemini API الخاص بك:');
     if (apiKey) {
       aiService.setApiKey(apiKey);
       window.location.reload(); // Refresh to update UI
@@ -57,7 +57,7 @@ const AIChatPanel = () => {
         <MessageCircle className="w-12 h-12 text-podcast-blue mb-4" />
         <h3 className="text-lg font-bold text-podcast-blue mb-2">إعداد الذكاء الاصطناعي</h3>
         <p className="text-podcast-gray mb-4 text-sm leading-relaxed">
-          لاستخدام الذكاء الاصطناعي، تحتاج إلى إعداد مفتاح OpenAI API
+          لاستخدام الذكاء الاصطناعي، تحتاج إلى إعداد مفتاح Gemini API
         </p>
         <button
           onClick={handleSetApiKey}

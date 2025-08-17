@@ -1,5 +1,5 @@
 
-import { ChatMessage } from '../types/chat';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AIServiceConfig {
   model?: string;
@@ -14,11 +14,14 @@ interface AIMessage {
 
 class AIService {
   private apiKey: string | null = null;
-  private baseURL = 'https://api.openai.com/v1';
+  private genAI: GoogleGenerativeAI | null = null;
 
   constructor() {
     // Try to get API key from environment or prompt user to set it
     this.apiKey = this.getApiKey();
+    if (this.apiKey) {
+      this.genAI = new GoogleGenerativeAI(this.apiKey);
+    }
   }
 
   private getApiKey(): string | null {
@@ -30,33 +33,44 @@ class AIService {
     messages: AIMessage[],
     config: AIServiceConfig = {}
   ): Promise<string> {
-    if (!this.apiKey) {
-      throw new Error('OpenAI API key not configured. Please set your API key.');
+    if (!this.apiKey || !this.genAI) {
+      throw new Error('Gemini API key not configured. Please set your API key.');
     }
 
-    const { model = 'gpt-4', temperature = 0.7, maxTokens = 1000 } = config;
+    const { model = 'gemini-1.5-flash', temperature = 0.7 } = config;
 
     try {
-      const response = await fetch(`${this.baseURL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
+      const genModel = this.genAI.getGenerativeModel({ 
+        model,
+        generationConfig: {
           temperature,
-          max_tokens: maxTokens,
-        }),
+          maxOutputTokens: config.maxTokens || 1000,
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.statusText}`);
+      // Convert messages to Gemini format
+      // Gemini expects a conversation history and doesn't have system messages in the same way
+      // We'll prepend system message as part of the first user message
+      const systemMessage = messages.find(m => m.role === 'system');
+      const conversationMessages = messages.filter(m => m.role !== 'system');
+      
+      let prompt = '';
+      if (systemMessage) {
+        prompt = systemMessage.content + '\n\n';
       }
+      
+      // Add conversation history
+      conversationMessages.forEach(msg => {
+        if (msg.role === 'user') {
+          prompt += `المستخدم: ${msg.content}\n`;
+        } else if (msg.role === 'assistant') {
+          prompt += `المساعد: ${msg.content}\n`;
+        }
+      });
 
-      const data = await response.json();
-      return data.choices[0]?.message?.content || 'عذراً، لم أتمكن من الحصول على إجابة.';
+      const result = await genModel.generateContent(prompt);
+      const response = await result.response;
+      return response.text() || 'عذراً، لم أتمكن من الحصول على إجابة.';
     } catch (error) {
       console.error('AI Service Error:', error);
       throw new Error('فشل في الاتصال بخدمة الذكاء الاصطناعي');
@@ -65,10 +79,11 @@ class AIService {
 
   setApiKey(key: string) {
     this.apiKey = key;
+    this.genAI = new GoogleGenerativeAI(key);
   }
 
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return !!this.apiKey && !!this.genAI;
   }
 }
 
