@@ -5,6 +5,9 @@ import {
   $getSelection, 
   $isRangeSelection,
   $insertNodes,
+  $getRoot,
+  $setSelection,
+  $createRangeSelection,
   LexicalEditor
 } from 'lexical';
 import { $createHeadingNode } from '@lexical/rich-text';
@@ -93,7 +96,7 @@ export function insertContentAtCursor(editor: LexicalEditor, content: string): P
         
         resolve({
           success: true,
-          message: `تم إدراج ${nodes.length} عنصر بنجاح`
+          message: `تم إدراج ${nodes.length} عنصر بنجاح عند المؤشر`
         });
         
       } catch (error) {
@@ -107,17 +110,91 @@ export function insertContentAtCursor(editor: LexicalEditor, content: string): P
   });
 }
 
+// Insert content at the end of the document
+export function insertContentAtEnd(editor: LexicalEditor, content: string): Promise<InsertionResult> {
+  return new Promise((resolve) => {
+    editor.update(() => {
+      try {
+        const root = $getRoot();
+        const nodes = convertContentToNodes(content);
+        
+        if (nodes.length === 0) {
+          resolve({
+            success: false,
+            message: 'لا يوجد محتوى للإدراج'
+          });
+          return;
+        }
+
+        // Add some spacing before new content if document isn't empty
+        if (root.getChildrenSize() > 0) {
+          root.append($createParagraphNode());
+        }
+
+        // Append nodes to the end
+        nodes.forEach(node => root.append(node));
+        
+        // Move cursor to end of inserted content
+        const lastNode = nodes[nodes.length - 1];
+        if (lastNode) {
+          const selection = $createRangeSelection();
+          selection.anchor.set(lastNode.getKey(), lastNode.getChildrenSize(), 'element');
+          selection.focus.set(lastNode.getKey(), lastNode.getChildrenSize(), 'element');
+          $setSelection(selection);
+        }
+        
+        resolve({
+          success: true,
+          message: `تم إدراج ${nodes.length} عنصر بنجاح في نهاية المستند`
+        });
+        
+      } catch (error) {
+        console.error('Error inserting content at end:', error);
+        resolve({
+          success: false,
+          message: 'حدث خطأ أثناء الإدراج في النهاية'
+        });
+      }
+    });
+  });
+}
+
 // Get current cursor context (what section/heading the cursor is under)
 export function getCurrentCursorContext(editor: LexicalEditor): Promise<string> {
   return new Promise((resolve) => {
     editor.getEditorState().read(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        // For now, return a simple context
-        // This could be enhanced to detect which heading section we're under
-        resolve('قسم المحتوى الحالي');
-      } else {
-        resolve('غير محدد');
+      try {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          const anchorNode = selection.anchor.getNode();
+          const focusNode = selection.focus.getNode();
+          
+          // Try to find the nearest heading or section
+          let contextNode = anchorNode.getParent();
+          let context = 'قسم المحتوى الحالي';
+          
+          // Look for headings in nearby nodes
+          const root = $getRoot();
+          const children = root.getChildren();
+          
+          for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            if (child.getType() === 'heading') {
+              const textContent = child.getTextContent();
+              if (textContent) {
+                context = `تحت العنوان: ${textContent}`;
+                break;
+              }
+            }
+          }
+          
+          resolve(context);
+        } else {
+          resolve('بداية المستند');
+        }
+      } catch (error) {
+        console.error('Error getting cursor context:', error);
+        resolve('موقع غير محدد');
       }
     });
   });

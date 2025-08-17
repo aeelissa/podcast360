@@ -58,7 +58,7 @@ const AIChatPanel = () => {
     
     if (result.success) {
       console.log('Content inserted successfully:', result.message);
-      // Could show a toast notification here
+      // Show success feedback - could be enhanced with toast notifications
     } else {
       console.error('Content insertion failed:', result.message);
       // Fallback to original method
@@ -140,15 +140,15 @@ const AIChatPanel = () => {
                     </div>
                   </div>
                   
-                  {/* Enhanced Action Buttons for AI Messages */}
                   {message.role === 'assistant' && index === messages.length - 1 && !isLoading && (
                     <div className="flex gap-2 mt-3 mr-8 justify-end flex-wrap">
                       <button
                         onClick={() => handleApplyToDocument(message.content)}
                         className="bg-podcast-blue/10 hover:bg-podcast-blue/20 text-podcast-blue px-4 py-2 rounded-full text-sm transition-colors font-medium flex items-center gap-1"
+                        title="معاينة وإدراج المحتوى في المحرر"
                       >
                         <ArrowRight className="w-3 h-3" />
-                        إضافة للمحرر
+                        معاينة وإدراج
                       </button>
                       
                       <button
@@ -241,7 +241,7 @@ const AIChatPanel = () => {
         </div>
       </div>
 
-      {/* Insertion Preview Modal */}
+      {/* Enhanced Insertion Preview Modal */}
       <InsertionPreviewModal
         isOpen={insertionModal.isOpen}
         onClose={() => setInsertionModal({ isOpen: false, content: '' })}
