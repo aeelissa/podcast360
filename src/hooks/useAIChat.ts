@@ -141,7 +141,10 @@ ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostN
         }))
       ];
 
-      const response = await aiService.chat(aiMessages);
+      const response = await aiService.chat(aiMessages, {
+        temperature: 0.7,
+        maxTokens: 1500 // Increased for more detailed responses
+      });
       const validatedResponse = validateAIResponse(response);
 
       const aiMessage: ChatMessage = {

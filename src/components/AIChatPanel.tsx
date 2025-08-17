@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { MessageCircle, Send, Loader2, Copy, ArrowRight, MoreVertical, Settings } from 'lucide-react';
+import { MessageCircle, Send, Loader2, Settings } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
 import { useDocumentContext } from '../contexts/DocumentContext';
 import { contentInsertionService } from '../services/contentInsertionService';
+import { aiResponseProcessor } from '../services/aiResponseProcessor';
 import InsertionPreviewModal from './InsertionPreviewModal';
 import SessionSwitcher from './chat/SessionSwitcher';
 import SessionMigrationModal from './chat/SessionMigrationModal';
+import EnhancedMessageDisplay from './chat/EnhancedMessageDisplay';
 import { sessionManager } from '../utils/sessionManager';
 import { ChatMessage } from '../types/chat';
 
@@ -101,6 +103,37 @@ const AIChatPanel = () => {
     }
   };
 
+  const handleEnhancedAction = (actionType: string, content: string) => {
+    const context = {
+      documentType: activeDocument?.type,
+      currentSection: getCurrentSectionName(),
+    };
+
+    const processedResponse = aiResponseProcessor.processResponse(content, context);
+    
+    switch (actionType) {
+      case 'insert-at-cursor':
+        handleApplyToDocument(processedResponse.formattedContent);
+        break;
+      case 'append-to-section':
+        // Use append mode for content insertion
+        contentInsertionService.setInsertionMode('append');
+        handleApplyToDocument(processedResponse.formattedContent);
+        break;
+      case 'create-new-section':
+        // Add as new section with proper heading
+        const sectionContent = `\n\n## قسم جديد\n\n${processedResponse.formattedContent}`;
+        handleApplyToDocument(sectionContent);
+        break;
+      case 'replace-selection':
+        // This would need editor selection state - for now, fallback to cursor
+        handleApplyToDocument(processedResponse.formattedContent);
+        break;
+      default:
+        handleApplyToDocument(content);
+    }
+  };
+
   return (
     <>
       <div className="podcast-panel h-full flex flex-col">
@@ -159,7 +192,7 @@ const AIChatPanel = () => {
           </div>
         </div>
 
-        {/* Chat Messages with enhanced message actions */}
+        {/* Enhanced Chat Messages */}
         <div className="flex-1 overflow-hidden relative">
           <div className="h-full overflow-y-auto p-4 scroll-smooth">
             <div className="space-y-4">
@@ -177,66 +210,27 @@ const AIChatPanel = () => {
                 </div>
               )}
               
-              {messages.map((message, index) => (
-                <div key={message.id}>
-                  <div
-                    className={`rounded-xl p-4 ${
-                      message.role === 'user' 
-                        ? 'bg-podcast-blue/10 mr-8' 
-                        : 'bg-gray-50 ml-8 border border-gray-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm font-bold text-podcast-gray text-right">
-                        {message.role === 'user' ? 'المُنتِج' : 'AI'}
-                      </div>
-                      
-                      {/* Enhanced Message Actions */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleCopyMessage(message.id, message.content)}
-                          className="p-1 hover:bg-podcast-blue/10 rounded text-podcast-gray hover:text-podcast-blue transition-colors"
-                          title="نسخ الرسالة"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                        
-                        <button
-                          onClick={() => handleMigrateMessage(message)}
-                          className="p-1 hover:bg-podcast-gold/10 rounded text-podcast-gray hover:text-podcast-gold-dark transition-colors"
-                          title="نقل إلى جلسة أخرى"
-                        >
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="text-sm leading-relaxed text-right whitespace-pre-line">
-                      {message.content}
-                    </div>
-                  </div>
-                  
-                  {message.role === 'assistant' && index === messages.length - 1 && !isLoading && (
-                    <div className="flex gap-2 mt-3 mr-8 justify-end flex-wrap">
-                      <button
-                        onClick={() => handleApplyToDocument(message.content)}
-                        className="bg-podcast-blue/10 hover:bg-podcast-blue/20 text-podcast-blue px-4 py-2 rounded-full text-sm transition-colors font-medium flex items-center gap-1"
-                        title="معاينة وإدراج المحتوى في المحرر"
-                      >
-                        <ArrowRight className="w-3 h-3" />
-                        معاينة وإدراج
-                      </button>
-                      
-                      <button
-                        onClick={() => handleSaveAsNote(message.content)}
-                        className="bg-podcast-gold/10 hover:bg-podcast-gold/20 text-podcast-gold-dark px-4 py-2 rounded-full text-sm transition-colors font-medium"
-                      >
-                        حفظ كملاحظة
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+              {messages.map((message, index) => {
+                // Process AI responses for enhanced display
+                const processedResponse = message.role === 'assistant' 
+                  ? aiResponseProcessor.processResponse(message.content, {
+                      documentType: activeDocument?.type,
+                      currentSection: getCurrentSessionName(),
+                    })
+                  : undefined;
+
+                return (
+                  <EnhancedMessageDisplay
+                    key={message.id}
+                    message={message}
+                    processedResponse={processedResponse}
+                    onAction={handleEnhancedAction}
+                    onCopy={handleCopyMessage}
+                    onMigrate={handleMigrateMessage}
+                    isLatest={index === messages.length - 1 && !isLoading}
+                  />
+                );
+              })}
               
               {/* Loading indicator */}
               {isLoading && (
