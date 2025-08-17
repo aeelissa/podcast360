@@ -25,10 +25,10 @@ const SessionMigrationModal: React.FC<SessionMigrationModalProps> = ({
   const { activeDocument } = useDocumentContext();
 
   const availableTargetSessions: SessionKey[] = [
-    { documentId: activeDocument?.id || '', sectionKey: 'concept' },
-    { documentId: activeDocument?.id || '', sectionKey: 'preparation' },
-    { documentId: activeDocument?.id || '', sectionKey: 'script' },
-    { documentId: activeDocument?.id || '', sectionKey: 'global' }
+    { documentId: activeDocument?.id || '', sectionKey: 'concept' as const },
+    { documentId: activeDocument?.id || '', sectionKey: 'preparation' as const },
+    { documentId: activeDocument?.id || '', sectionKey: 'script' as const },
+    { documentId: activeDocument?.id || '', sectionKey: 'global' as const }
   ].filter(session => session.sectionKey !== currentSessionKey?.sectionKey);
 
   const handleMigration = () => {
