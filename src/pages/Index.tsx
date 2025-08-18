@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
@@ -7,18 +6,12 @@ import WorkArea from '../components/WorkArea';
 import NavigationPanel from '../components/NavigationPanel';
 import DemoBanner from '../components/DemoBanner';
 import HierarchyBreadcrumb from '../components/hierarchy/HierarchyBreadcrumb';
-import PodcastSelector from '../components/hierarchy/PodcastSelector';
-import EpisodeSelector from '../components/hierarchy/EpisodeSelector';
-import CreatePodcastModal from '../components/modals/CreatePodcastModal';
-import CreateEpisodeModal from '../components/modals/CreateEpisodeModal';
 import { DocumentProvider } from '../contexts/DocumentContext';
 import { PodcastSettingsProvider } from '../contexts/PodcastSettingsContext';
 import { PodcastProvider } from '../contexts/PodcastContext';
 
 const Index = () => {
   const [isNavigationVisible, setIsNavigationVisible] = useState(false);
-  const [showCreatePodcast, setShowCreatePodcast] = useState(false);
-  const [showCreateEpisode, setShowCreateEpisode] = useState(false);
 
   return (
     <PodcastSettingsProvider>
@@ -52,16 +45,9 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Hierarchy Navigation */}
+              {/* Simplified Hierarchy Navigation */}
               <div className="mt-3 pt-3 border-t border-podcast-border/50">
-                <div className="flex items-center justify-between">
-                  <HierarchyBreadcrumb />
-                  
-                  <div className="flex items-center gap-4">
-                    <PodcastSelector onCreatePodcast={() => setShowCreatePodcast(true)} />
-                    <EpisodeSelector onCreateEpisode={() => setShowCreateEpisode(true)} />
-                  </div>
-                </div>
+                <HierarchyBreadcrumb />
               </div>
             </header>
 
@@ -99,16 +85,6 @@ const Index = () => {
                 </div>
               )}
             </div>
-
-            {/* Modals */}
-            <CreatePodcastModal 
-              isOpen={showCreatePodcast} 
-              onClose={() => setShowCreatePodcast(false)} 
-            />
-            <CreateEpisodeModal 
-              isOpen={showCreateEpisode} 
-              onClose={() => setShowCreateEpisode(false)} 
-            />
           </div>
         </DocumentProvider>
       </PodcastProvider>
@@ -117,4 +93,3 @@ const Index = () => {
 };
 
 export default Index;
-
