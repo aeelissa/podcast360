@@ -190,7 +190,7 @@ export const PodcastProvider: React.FC<PodcastProviderProps> = ({ children }) =>
       // Episode methods
       createEpisode,
       selectEpisode,
-      updateEpisodeß,
+      updateEpisode,
       deleteEpisode
     }}>
       {children}

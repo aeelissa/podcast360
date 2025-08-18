@@ -1,124 +1,195 @@
 
-import { KnowledgeFile, ChatUploadedFile } from '../types/file';
-import { FILE_UPLOAD_CONFIG } from '../types/file';
+import { FileUploadConfig, ChatUploadedFile, FileProcessingResult } from '../types/file';
+import { KnowledgeFile } from '../types/podcast';
+import { fileProcessor } from '../services/fileProcessor';
 
 const KNOWLEDGE_FILES_KEY = 'podcast360_knowledge_files';
 const CHAT_FILES_KEY = 'podcast360_chat_files';
 
 export const fileStorage = {
-  // Knowledge Base Files
+  // Knowledge Base files (podcast-level)
   getKnowledgeFiles(podcastId: string): KnowledgeFile[] {
     try {
       const stored = localStorage.getItem(KNOWLEDGE_FILES_KEY);
-      const allFiles: Record<string, KnowledgeFile[]> = stored ? JSON.parse(stored) : {};
-      return allFiles[podcastId] || [];
+      const allFiles: KnowledgeFile[] = stored ? JSON.parse(stored) : [];
+      return allFiles.filter(file => file.podcastId === podcastId);
     } catch (error) {
       console.error('Error loading knowledge files:', error);
       return [];
     }
   },
 
-  saveKnowledgeFile(podcastId: string, file: KnowledgeFile): boolean {
+  saveKnowledgeFile(file: KnowledgeFile): void {
     try {
       const stored = localStorage.getItem(KNOWLEDGE_FILES_KEY);
-      const allFiles: Record<string, KnowledgeFile[]> = stored ? JSON.parse(stored) : {};
+      const allFiles: KnowledgeFile[] = stored ? JSON.parse(stored) : [];
       
-      if (!allFiles[podcastId]) {
-        allFiles[podcastId] = [];
+      const existingIndex = allFiles.findIndex(f => f.id === file.id);
+      if (existingIndex >= 0) {
+        allFiles[existingIndex] = file;
+      } else {
+        allFiles.push(file);
       }
-
-      // Check file count limit
-      if (allFiles[podcastId].length >= FILE_UPLOAD_CONFIG.maxFilesPerPodcast) {
-        throw new Error(`Maximum ${FILE_UPLOAD_CONFIG.maxFilesPerPodcast} files allowed per podcast`);
-      }
-
-      // Check file size
-      if (file.size > FILE_UPLOAD_CONFIG.maxFileSize) {
-        throw new Error(`File size must be less than ${FILE_UPLOAD_CONFIG.maxFileSize / (1024 * 1024)}MB`);
-      }
-
-      allFiles[podcastId].push(file);
+      
       localStorage.setItem(KNOWLEDGE_FILES_KEY, JSON.stringify(allFiles));
-      return true;
     } catch (error) {
       console.error('Error saving knowledge file:', error);
-      return false;
+      throw error;
     }
   },
 
-  deleteKnowledgeFile(podcastId: string, fileId: string): void {
+  deleteKnowledgeFile(fileId: string): void {
     try {
       const stored = localStorage.getItem(KNOWLEDGE_FILES_KEY);
-      const allFiles: Record<string, KnowledgeFile[]> = stored ? JSON.parse(stored) : {};
-      
-      if (allFiles[podcastId]) {
-        allFiles[podcastId] = allFiles[podcastId].filter(f => f.id !== fileId);
-        localStorage.setItem(KNOWLEDGE_FILES_KEY, JSON.stringify(allFiles));
-      }
+      const allFiles: KnowledgeFile[] = stored ? JSON.parse(stored) : [];
+      const filtered = allFiles.filter(f => f.id !== fileId);
+      localStorage.setItem(KNOWLEDGE_FILES_KEY, JSON.stringify(filtered));
     } catch (error) {
       console.error('Error deleting knowledge file:', error);
     }
   },
 
-  // Chat Files
+  // Chat uploaded files (session-level)
   getChatFiles(sessionId: string): ChatUploadedFile[] {
     try {
       const stored = localStorage.getItem(CHAT_FILES_KEY);
-      const allFiles: Record<string, ChatUploadedFile[]> = stored ? JSON.parse(stored) : {};
-      return allFiles[sessionId] || [];
+      const allFiles: ChatUploadedFile[] = stored ? JSON.parse(stored) : [];
+      return allFiles.filter(file => file.sessionId === sessionId);
     } catch (error) {
       console.error('Error loading chat files:', error);
       return [];
     }
   },
 
-  saveChatFile(sessionId: string, file: ChatUploadedFile): boolean {
+  saveChatFile(file: ChatUploadedFile): void {
     try {
       const stored = localStorage.getItem(CHAT_FILES_KEY);
-      const allFiles: Record<string, ChatUploadedFile[]> = stored ? JSON.parse(stored) : {};
+      const allFiles: ChatUploadedFile[] = stored ? JSON.parse(stored) : [];
       
-      if (!allFiles[sessionId]) {
-        allFiles[sessionId] = [];
+      const existingIndex = allFiles.findIndex(f => f.id === file.id);
+      if (existingIndex >= 0) {
+        allFiles[existingIndex] = file;
+      } else {
+        allFiles.push(file);
       }
-
-      allFiles[sessionId].push(file);
+      
       localStorage.setItem(CHAT_FILES_KEY, JSON.stringify(allFiles));
-      return true;
     } catch (error) {
       console.error('Error saving chat file:', error);
-      return false;
+      throw error;
     }
   },
 
-  // Utility function to convert file to base64
-  async fileToBase64(file: File): Promise<string> {
+  deleteChatFile(fileId: string): void {
+    try {
+      const stored = localStorage.getItem(CHAT_FILES_KEY);
+      const allFiles: ChatUploadedFile[] = stored ? JSON.parse(stored) : [];
+      const filtered = allFiles.filter(f => f.id !== fileId);
+      localStorage.setItem(CHAT_FILES_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Error deleting chat file:', error);
+    }
+  },
+
+  // File processing and validation
+  async processFile(file: File, podcastId?: string, sessionId?: string): Promise<FileProcessingResult> {
+    try {
+      // Validate file
+      const validation = this.validateFile(file);
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+
+      // Process file content
+      const result = await fileProcessor.processFile(file);
+      
+      if (result.success && result.extractedText) {
+        // Create file record
+        const fileRecord = await this.createFileRecord(file, result.extractedText, podcastId, sessionId);
+        
+        // Save to appropriate storage
+        if (podcastId) {
+          this.saveKnowledgeFile(fileRecord as KnowledgeFile);
+        } else if (sessionId) {
+          this.saveChatFile(fileRecord as ChatUploadedFile);
+        }
+        
+        return { success: true, extractedText: result.extractedText };
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error processing file:', error);
+      return { success: false, error: 'Failed to process file' };
+    }
+  },
+
+  validateFile(file: File): { isValid: boolean; error?: string } {
+    const config: FileUploadConfig = {
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      maxFilesPerPodcast: 5,
+      allowedTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    };
+
+    if (file.size > config.maxFileSize) {
+      return { isValid: false, error: 'File size exceeds 10MB limit' };
+    }
+
+    if (!config.allowedTypes.includes(file.type)) {
+      return { isValid: false, error: 'Only PDF and DOC/DOCX files are allowed' };
+    }
+
+    return { isValid: true };
+  },
+
+  async createFileRecord(file: File, extractedText: string, podcastId?: string, sessionId?: string): Promise<KnowledgeFile | ChatUploadedFile> {
+    const content = await this.fileToBase64(file);
+    const now = new Date().toISOString();
+    
+    const baseRecord = {
+      id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      content,
+      extractedText,
+      uploadedAt: now
+    };
+
+    if (podcastId) {
+      return {
+        ...baseRecord,
+        podcastId
+      } as KnowledgeFile;
+    } else if (sessionId) {
+      return {
+        ...baseRecord,
+        sessionId
+      } as ChatUploadedFile;
+    }
+
+    throw new Error('Either podcastId or sessionId must be provided');
+  },
+
+  fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
-        const base64 = reader.result as string;
-        resolve(base64.split(',')[1]); // Remove data:mime;base64, prefix
+        const result = reader.result as string;
+        resolve(result.split(',')[1]); // Remove data:type;base64, prefix
       };
       reader.onerror = error => reject(error);
     });
   },
 
-  // Validate file before upload
-  validateFile(file: File): { valid: boolean; error?: string } {
-    if (file.size > FILE_UPLOAD_CONFIG.maxFileSize) {
-      return { 
-        valid: false, 
-        error: `حجم الملف يجب أن يكون أقل من ${FILE_UPLOAD_CONFIG.maxFileSize / (1024 * 1024)}MB` 
-      };
+  base64ToBlob(base64: string, type: string): Blob {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
-
-    if (!FILE_UPLOAD_CONFIG.allowedTypes.includes(file.type)) {
-      return { 
-        valid: false, 
-        error: 'نوع الملف غير مدعوم. الأنواع المدعومة: PDF, DOC, DOCX' 
-      };
-    }
-
-    return { valid: true };
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type });
   }
 };
