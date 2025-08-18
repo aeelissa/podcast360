@@ -1,4 +1,3 @@
-
 import { Podcast, PodcastLevelSettings } from '../types/podcast';
 
 const PODCASTS_KEY = 'podcast360_podcasts';
@@ -50,14 +49,14 @@ export const podcastStorage = {
     }
   },
 
-  // Create a new podcast with default settings
+  // Create a new podcast with default or provided settings
   createPodcast(name: string, description: string, settings?: Partial<PodcastLevelSettings>): Podcast {
     const defaultSettings: PodcastLevelSettings = {
       identity: {
-        tone: 'ودودة ومهنية',
-        style: ['تفاعلي', 'تعليمي'],
-        audience: 'المهتمين بالتكنولوجيا',
-        brandVoice: 'عربية فصحى معاصرة',
+        tone: '',
+        style: [],
+        audience: '',
+        brandVoice: '',
         hostName: ''
       },
       advanced: {
@@ -74,7 +73,11 @@ export const podcastStorage = {
       settings: {
         ...defaultSettings,
         ...settings,
-        identity: { ...defaultSettings.identity, ...settings?.identity },
+        identity: { 
+          ...defaultSettings.identity, 
+          ...settings?.identity,
+          showName: name // Ensure showName matches podcast name
+        },
         advanced: { ...defaultSettings.advanced, ...settings?.advanced }
       },
       knowledgeBase: [],

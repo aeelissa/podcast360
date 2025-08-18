@@ -1,4 +1,3 @@
-
 import { Episode, EpisodeLevelSettings } from '../types/podcast';
 
 const EPISODES_KEY = 'podcast360_episodes';
@@ -56,13 +55,13 @@ export const episodeStorage = {
     }
   },
 
-  // Create a new episode with default settings
+  // Create a new episode with default or provided settings
   createEpisode(title: string, podcastId: string, description?: string, settings?: Partial<EpisodeLevelSettings>): Episode {
     const defaultSettings: EpisodeLevelSettings = {
-      goals: ['تقديم محتوى قيم للمستمعين'],
-      successCriteria: ['الحصول على تفاعل إيجابي من المستمعين'],
+      goals: [],
+      successCriteria: [],
       duration: 30,
-      contentType: 'مقابلة'
+      contentType: ''
     };
 
     const episode: Episode = {

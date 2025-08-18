@@ -3,55 +3,91 @@ import { useState, useEffect, useCallback } from 'react';
 import { Document, DocumentType } from '../types/document';
 import { documentStorage } from '../utils/documentStorage';
 import { createDocumentFromTemplate } from '../utils/documentTemplates';
+import { usePodcast } from '../contexts/PodcastContext';
 
 export const useDocumentManager = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [activeDocument, setActiveDocument] = useState<Document | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  
+  // Get current episode context
+  const { currentEpisode, currentPodcast } = usePodcast();
 
-  // Load documents on mount
+  // Load episode-specific documents when episode changes
   useEffect(() => {
-    const loadedDocuments = documentStorage.getAllDocuments();
-    setDocuments(loadedDocuments);
-  }, []);
+    if (currentEpisode) {
+      console.log('Loading documents for episode:', currentEpisode.title);
+      const episodeDocuments = documentStorage.getDocumentsByEpisode(currentEpisode.id);
+      setDocuments(episodeDocuments);
+      
+      // Auto-select concept document if available, or first document
+      const conceptDoc = episodeDocuments.find(doc => doc.type === 'concept');
+      const firstDoc = episodeDocuments.length > 0 ? episodeDocuments[0] : null;
+      setActiveDocument(conceptDoc || firstDoc);
+    } else {
+      // Clear documents when no episode is selected
+      setDocuments([]);
+      setActiveDocument(null);
+    }
+  }, [currentEpisode]);
 
-  // Generate document ID
+  // Generate document ID with episode context
   const generateDocumentId = (type: DocumentType): string => {
     const timestamp = Date.now();
-    return `podcast360_${type}_${timestamp}`;
+    const episodeId = currentEpisode?.id || 'no_episode';
+    return `podcast360_${episodeId}_${type}_${timestamp}`;
   };
 
-  // Create a new document from template
+  // Create a new document from template for current episode
   const createDocument = useCallback((type: DocumentType): Document => {
+    if (!currentEpisode) {
+      throw new Error('No episode selected. Cannot create document.');
+    }
+
     const template = createDocumentFromTemplate(type);
     const now = new Date().toISOString();
     
     const newDocument: Document = {
       id: generateDocumentId(type),
-      title: template.title,
+      title: `${template.title} - ${currentEpisode.title}`,
       content: template.content,
       type: template.type,
+      episodeId: currentEpisode.id,
       createdAt: now,
       modifiedAt: now,
-      metadata: template.metadata
+      metadata: {
+        ...template.metadata,
+        podcastId: currentPodcast?.id,
+        episodeId: currentEpisode.id
+      }
     };
 
     documentStorage.saveDocument(newDocument);
     setDocuments(prev => [...prev, newDocument]);
     
+    console.log('Created document for episode:', {
+      document: newDocument.title,
+      episode: currentEpisode.title,
+      podcast: currentPodcast?.name
+    });
+    
     return newDocument;
-  }, []);
+  }, [currentEpisode, currentPodcast]);
 
-  // Get or create document for a type
+  // Get or create document for current episode
   const getOrCreateDocument = useCallback((type: DocumentType): Document => {
-    const existingDoc = documents.find(doc => doc.type === type);
+    if (!currentEpisode) {
+      throw new Error('No episode selected. Cannot get or create document.');
+    }
+
+    const existingDoc = documents.find(doc => doc.type === type && doc.episodeId === currentEpisode.id);
     if (existingDoc) {
       return existingDoc;
     }
     return createDocument(type);
-  }, [documents, createDocument]);
+  }, [documents, currentEpisode, createDocument]);
 
-  // Save document with debouncing
+  // Save document with enhanced context logging
   const saveDocument = useCallback((document: Document) => {
     setSaveStatus('saving');
     
@@ -66,13 +102,19 @@ export const useDocumentManager = () => {
       prev.map(doc => doc.id === updatedDocument.id ? updatedDocument : doc)
     );
 
+    console.log('Saved document:', {
+      document: updatedDocument.title,
+      episode: currentEpisode?.title,
+      podcast: currentPodcast?.name
+    });
+
     // Simulate save delay for user feedback
     setTimeout(() => {
       setSaveStatus('saved');
     }, 500);
-  }, []);
+  }, [currentEpisode, currentPodcast]);
 
-  // Update document content
+  // Update document content with context awareness
   const updateDocumentContent = useCallback((documentId: string, content: string) => {
     const document = documents.find(doc => doc.id === documentId);
     if (document) {
@@ -92,6 +134,7 @@ export const useDocumentManager = () => {
     saveStatus,
     getOrCreateDocument,
     updateDocumentContent,
-    saveDocument
+    saveDocument,
+    currentEpisodeContext: currentEpisode
   };
 };

@@ -1,6 +1,6 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Document } from '../types/document';
+import { usePodcast } from './PodcastContext';
 
 export interface DocumentSection {
   title: string;
@@ -33,6 +33,25 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
   const [activeDocument, setActiveDocument] = useState<Document | null>(null);
   const [cursorPosition, setCursorPosition] = useState<number | null>(null);
   const [currentSection, setCurrentSection] = useState<string | null>(null);
+
+  // Get podcast context to sync with current episode
+  const { currentEpisode, currentPodcast } = usePodcast();
+
+  // Auto-sync documents when episode changes
+  useEffect(() => {
+    if (currentEpisode && currentPodcast) {
+      console.log('Episode changed, updating document context:', {
+        podcast: currentPodcast.name,
+        episode: currentEpisode.title
+      });
+      
+      // Clear active document when switching episodes
+      // The document editor will handle loading episode-specific documents
+      setActiveDocument(null);
+      setCursorPosition(null);
+      setCurrentSection(null);
+    }
+  }, [currentEpisode, currentPodcast]);
 
   const getDocumentSections = (): DocumentSection[] => {
     if (!activeDocument?.content) return [];
@@ -90,6 +109,12 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
 
   const insertContentAtCursor = (content: string) => {
     console.log('DocumentContext: Inserting content at cursor:', content);
+    console.log('Current context:', {
+      podcast: currentPodcast?.name,
+      episode: currentEpisode?.title,
+      document: activeDocument?.type
+    });
+    
     if (activeDocument) {
       // Enhanced insertion logic - try to be smarter about placement
       const existingContent = activeDocument.content;
@@ -121,11 +146,13 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
       content,
       createdAt: new Date().toISOString(),
       documentId: activeDocument?.id || null,
+      episodeId: currentEpisode?.id || null,
+      podcastId: currentPodcast?.id || null,
       sectionKey: getCurrentSectionKey()
     };
     notes.push(newNote);
     localStorage.setItem('podcast360_notes', JSON.stringify(notes));
-    console.log('Saved as note:', content);
+    console.log('Saved as note with episode context:', newNote);
   };
 
   return (

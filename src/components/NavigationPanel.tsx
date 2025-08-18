@@ -1,13 +1,12 @@
 
 import React, { useState } from 'react';
-import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download, X, Edit3, Plus, Upload, File } from 'lucide-react';
+import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download, X, Plus, Upload, File } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
 import PodcastSelector from './hierarchy/PodcastSelector';
 import EpisodeSelector from './hierarchy/EpisodeSelector';
 import HierarchyBreadcrumb from './hierarchy/HierarchyBreadcrumb';
 import CreatePodcastModal from './modals/CreatePodcastModal';
 import CreateEpisodeModal from './modals/CreateEpisodeModal';
-import PodcastSettingsPanel from './PodcastSettingsPanel';
 
 interface NavigationPanelProps {
   isVisible: boolean;
@@ -52,12 +51,12 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
           <div className="h-full overflow-y-auto scroll-smooth">
             {/* Hierarchy Navigation Section */}
             <div className="p-4 border-b border-podcast-border">
-              <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">التسلسل الهرمي</h3>
+              <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">إدارة البودكاست</h3>
               
               {needsOnboarding ? (
                 <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3 mb-3">
                   <p className="text-xs text-podcast-gray text-right leading-relaxed mb-2">
-                    ابدأ بإنشاء بودكاست جديد
+                    ابدأ بإنشاء بودكاست جديد مع إعداداته
                   </p>
                   <button
                     onClick={() => setShowCreatePodcast(true)}
@@ -152,39 +151,33 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
             {currentPodcast && (
               <div className="p-4 border-b border-podcast-border">
                 <div className="flex items-center gap-2 mb-3 justify-end">
-                  <PodcastSettingsPanel 
-                    trigger={
-                      <button className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors flex items-center gap-1">
-                        <Edit3 className="w-3 h-3" />
-                        تحرير
-                      </button>
-                    }
-                  />
                   <h3 className="font-bold text-podcast-gray text-sm">Podcast Brain</h3>
                 </div>
                 <div className="space-y-2">
                   <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
                     <div className="text-xs font-bold text-podcast-blue mb-1 text-right">نبرة</div>
                     <div className="text-xs text-podcast-gray text-right leading-relaxed">
-                      {currentPodcast.settings.identity.tone}
+                      {currentPodcast.settings.identity.tone || 'غير محدد'}
                     </div>
                   </div>
                   <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
                     <div className="text-xs font-bold text-podcast-blue mb-1 text-right">أسلوب</div>
                     <div className="text-xs text-podcast-gray text-right leading-relaxed">
-                      {currentPodcast.settings.identity.style.join(' و ')}
+                      {currentPodcast.settings.identity.style.length > 0 
+                        ? currentPodcast.settings.identity.style.join(' و ') 
+                        : 'غير محدد'}
                     </div>
                   </div>
                   <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
                     <div className="text-xs font-bold text-podcast-blue mb-1 text-right">جمهور</div>
                     <div className="text-xs text-podcast-gray text-right leading-relaxed">
-                      {currentPodcast.settings.identity.audience}
+                      {currentPodcast.settings.identity.audience || 'غير محدد'}
                     </div>
                   </div>
                   <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
                     <div className="text-xs font-bold text-podcast-blue mb-1 text-right">لغة العلامة</div>
                     <div className="text-xs text-podcast-gray text-right leading-relaxed">
-                      {currentPodcast.settings.identity.brandVoice}
+                      {currentPodcast.settings.identity.brandVoice || 'غير محدد'}
                     </div>
                   </div>
                 </div>
@@ -195,14 +188,6 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
             {currentEpisode && (
               <div className="p-4 border-b border-podcast-border">
                 <div className="flex items-center gap-2 mb-3 justify-end">
-                  <PodcastSettingsPanel 
-                    trigger={
-                      <button className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors flex items-center gap-1">
-                        <Edit3 className="w-3 h-3" />
-                        تحرير
-                      </button>
-                    }
-                  />
                   <h3 className="font-bold text-podcast-gray text-sm">Episode Brain</h3>
                 </div>
                 
@@ -210,12 +195,16 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
                 <div className="mb-4">
                   <h4 className="text-xs font-bold text-podcast-blue mb-2 text-right">أهداف الحلقة</h4>
                   <div className="space-y-2">
-                    {currentEpisode.settings.goals.map((goal, index) => (
-                      <div key={index} className="flex items-start gap-2 text-right">
-                        <span className="text-xs text-podcast-gray leading-relaxed">{goal}</span>
-                        <div className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-1.5 flex-shrink-0"></div>
-                      </div>
-                    ))}
+                    {currentEpisode.settings.goals.length > 0 ? (
+                      currentEpisode.settings.goals.map((goal, index) => (
+                        <div key={index} className="flex items-start gap-2 text-right">
+                          <span className="text-xs text-podcast-gray leading-relaxed">{goal}</span>
+                          <div className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-podcast-gray text-right opacity-75">لم يتم تحديد أهداف بعد</div>
+                    )}
                   </div>
                 </div>
 
@@ -223,12 +212,16 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
                 <div>
                   <h4 className="text-xs font-bold text-podcast-blue mb-2 text-right">معايير النجاح</h4>
                   <div className="space-y-2">
-                    {currentEpisode.settings.successCriteria.map((criteria, index) => (
-                      <div key={index} className="flex items-start gap-2 text-right">
-                        <span className="text-xs text-podcast-gray leading-relaxed">{criteria}</span>
-                        <div className="w-1.5 h-1.5 bg-podcast-gold rounded-full mt-1.5 flex-shrink-0"></div>
-                      </div>
-                    ))}
+                    {currentEpisode.settings.successCriteria.length > 0 ? (
+                      currentEpisode.settings.successCriteria.map((criteria, index) => (
+                        <div key={index} className="flex items-start gap-2 text-right">
+                          <span className="text-xs text-podcast-gray leading-relaxed">{criteria}</span>
+                          <div className="w-1.5 h-1.5 bg-podcast-gold rounded-full mt-1.5 flex-shrink-0"></div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-podcast-gray text-right opacity-75">لم يتم تحديد معايير بعد</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -276,7 +269,9 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
                 <h4 className="font-bold text-podcast-blue mb-1 text-sm text-right">
                   {currentPodcast?.name || 'Podcast360'} - MVP
                 </h4>
-                <p className="text-xs text-podcast-gray text-right leading-relaxed">مشروع تجريبي لمنصة البودكاست</p>
+                <p className="text-xs text-podcast-gray text-right leading-relaxed">
+                  {currentEpisode ? `الحلقة: ${currentEpisode.title}` : 'مشروع تجريبي لمنصة البودكاست'}
+                </p>
                 <div className="mt-3 flex items-center gap-2 justify-end">
                   <span className="text-xs text-podcast-gray">متصل</span>
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
