@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MessageCircle, Send, Loader2, Settings } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
@@ -248,43 +249,6 @@ const AIChatPanel = () => {
           {/* Scroll shadows */}
           <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-        </div>
-
-        {/* Mode Toggle Above Input */}
-        <div className="px-4 pb-3 border-t border-podcast-border pt-4">
-          <div className="flex items-center gap-6 justify-center text-sm">
-            <button
-              onClick={() => setChatMode('document')}
-              className="flex items-center gap-2 text-podcast-gray hover:text-podcast-blue transition-colors"
-            >
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                chatMode === 'document' 
-                  ? 'border-podcast-blue bg-podcast-blue' 
-                  : 'border-podcast-gray'
-              }`}>
-                {chatMode === 'document' && (
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                )}
-              </div>
-              <span className="font-medium">تطبيق على الوثيقة</span>
-            </button>
-            
-            <button
-              onClick={() => setChatMode('note')}
-              className="flex items-center gap-2 text-podcast-gray hover:text-podcast-blue transition-colors"
-            >
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                chatMode === 'note' 
-                  ? 'border-podcast-blue bg-podcast-blue' 
-                  : 'border-podcast-gray'
-              }`}>
-                {chatMode === 'note' && (
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                )}
-              </div>
-              <span className="font-medium">حفظ كملاحظة</span>
-            </button>
-          </div>
         </div>
 
         {/* Input Area */}

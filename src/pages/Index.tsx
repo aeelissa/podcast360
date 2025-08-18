@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
@@ -44,8 +45,8 @@ const Index = () => {
 
           {/* Main Layout */}
           <div className="flex h-[calc(100vh-73px)]">
-            {/* Left Panel - AI Chat (Hidden on mobile) */}
-            <div className="hidden md:block w-80 flex-shrink-0 p-4">
+            {/* Left Panel - AI Chat (Increased width to ~25% of screen) */}
+            <div className="hidden md:block w-[25vw] flex-shrink-0 p-4">
               <AIChatPanel />
             </div>
 
