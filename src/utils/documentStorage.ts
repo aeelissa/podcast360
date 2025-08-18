@@ -45,6 +45,18 @@ export const documentStorage = {
     return documents.filter(doc => doc.type === type);
   },
 
+  // Get documents by episode ID
+  getDocumentsByEpisode(episodeId: string): Document[] {
+    const documents = this.getAllDocuments();
+    return documents.filter(doc => doc.episodeId === episodeId);
+  },
+
+  // Get documents by episode ID and type
+  getDocumentsByEpisodeAndType(episodeId: string, type: DocumentType): Document[] {
+    const documents = this.getAllDocuments();
+    return documents.filter(doc => doc.episodeId === episodeId && doc.type === type);
+  },
+
   // Delete a document
   deleteDocument(id: string): void {
     try {
@@ -53,6 +65,22 @@ export const documentStorage = {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     } catch (error) {
       console.error('Error deleting document:', error);
+    }
+  },
+
+  // Migrate existing documents to new episode-based structure
+  migrateToEpisodeStructure(defaultEpisodeId: string): void {
+    try {
+      const documents = this.getAllDocuments();
+      const migratedDocuments = documents.map(doc => ({
+        ...doc,
+        episodeId: doc.episodeId || defaultEpisodeId
+      }));
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migratedDocuments));
+      console.log(`Migrated ${documents.length} documents to episode structure`);
+    } catch (error) {
+      console.error('Error migrating documents:', error);
     }
   }
 };

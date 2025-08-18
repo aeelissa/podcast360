@@ -1,86 +1,120 @@
 
+
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
 import WorkArea from '../components/WorkArea';
 import NavigationPanel from '../components/NavigationPanel';
 import DemoBanner from '../components/DemoBanner';
+import HierarchyBreadcrumb from '../components/hierarchy/HierarchyBreadcrumb';
+import PodcastSelector from '../components/hierarchy/PodcastSelector';
+import EpisodeSelector from '../components/hierarchy/EpisodeSelector';
+import CreatePodcastModal from '../components/modals/CreatePodcastModal';
+import CreateEpisodeModal from '../components/modals/CreateEpisodeModal';
 import { DocumentProvider } from '../contexts/DocumentContext';
 import { PodcastSettingsProvider } from '../contexts/PodcastSettingsContext';
+import { PodcastProvider } from '../contexts/PodcastContext';
 
 const Index = () => {
   const [isNavigationVisible, setIsNavigationVisible] = useState(false);
+  const [showCreatePodcast, setShowCreatePodcast] = useState(false);
+  const [showCreateEpisode, setShowCreateEpisode] = useState(false);
 
   return (
     <PodcastSettingsProvider>
-      <DocumentProvider>
-        <div className="min-h-screen bg-podcast-bg font-medium" dir="rtl">
-          {/* Demo Banner */}
-          <DemoBanner />
+      <PodcastProvider>
+        <DocumentProvider>
+          <div className="min-h-screen bg-podcast-bg font-medium" dir="rtl">
+            {/* Demo Banner */}
+            <DemoBanner />
 
-          {/* Header */}
-          <header className="bg-white border-b border-podcast-border px-4 py-3 shadow-sm sticky top-0 z-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setIsNavigationVisible(!isNavigationVisible)}
-                  className="p-2 hover:bg-podcast-blue/10 rounded-lg transition-colors"
-                  title="فتح/إغلاق لوحة التنقل"
-                >
-                  <Menu className="w-5 h-5 text-podcast-blue" />
-                </button>
-                <div>
-                  <h1 className="text-xl font-bold text-podcast-blue leading-tight">Podcast360</h1>
-                  <p className="text-sm text-podcast-gray leading-relaxed">منصة إنتاج البودكاست بالذكاء الاصطناعي</p>
+            {/* Header */}
+            <header className="bg-white border-b border-podcast-border px-4 py-3 shadow-sm sticky top-0 z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setIsNavigationVisible(!isNavigationVisible)}
+                    className="p-2 hover:bg-podcast-blue/10 rounded-lg transition-colors"
+                    title="فتح/إغلاق لوحة التنقل"
+                  >
+                    <Menu className="w-5 h-5 text-podcast-blue" />
+                  </button>
+                  <div>
+                    <h1 className="text-xl font-bold text-podcast-blue leading-tight">Podcast360</h1>
+                    <p className="text-sm text-podcast-gray leading-relaxed">منصة إنتاج البودكاست بالذكاء الاصطناعي</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <div className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium">
+                    MVP
+                  </div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
-                <div className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium">
-                  MVP
+              {/* Hierarchy Navigation */}
+              <div className="mt-3 pt-3 border-t border-podcast-border/50">
+                <div className="flex items-center justify-between">
+                  <HierarchyBreadcrumb />
+                  
+                  <div className="flex items-center gap-4">
+                    <PodcastSelector onCreatePodcast={() => setShowCreatePodcast(true)} />
+                    <EpisodeSelector onCreateEpisode={() => setShowCreateEpisode(true)} />
+                  </div>
                 </div>
               </div>
-            </div>
-          </header>
+            </header>
 
-          {/* Main Layout */}
-          <div className="flex h-[calc(100vh-73px)]">
-            {/* Left Panel - AI Chat (Increased width to ~25% of screen) */}
-            <div className="hidden md:block w-[25vw] flex-shrink-0 p-4">
-              <AIChatPanel />
-            </div>
-
-            {/* Center Panel - Work Area */}
-            <div className="flex-1 p-4 min-w-0">
-              <WorkArea />
-            </div>
-
-            {/* Right Panel - Navigation (Collapsible) */}
-            {isNavigationVisible && (
-              <div className="w-80 flex-shrink-0 p-4 hidden lg:block">
-                <NavigationPanel
-                  isVisible={isNavigationVisible}
-                  onClose={() => setIsNavigationVisible(false)}
-                />
+            {/* Main Layout */}
+            <div className="flex h-[calc(100vh-73px)]">
+              {/* Left Panel - AI Chat (Increased width to ~25% of screen) */}
+              <div className="hidden md:block w-[25vw] flex-shrink-0 p-4">
+                <AIChatPanel />
               </div>
-            )}
 
-            {/* Mobile Navigation Overlay */}
-            {isNavigationVisible && (
-              <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={() => setIsNavigationVisible(false)}>
-                <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] p-4" onClick={(e) => e.stopPropagation()}>
+              {/* Center Panel - Work Area */}
+              <div className="flex-1 p-4 min-w-0">
+                <WorkArea />
+              </div>
+
+              {/* Right Panel - Navigation (Collapsible) */}
+              {isNavigationVisible && (
+                <div className="w-80 flex-shrink-0 p-4 hidden lg:block">
                   <NavigationPanel
                     isVisible={isNavigationVisible}
                     onClose={() => setIsNavigationVisible(false)}
                   />
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Mobile Navigation Overlay */}
+              {isNavigationVisible && (
+                <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={() => setIsNavigationVisible(false)}>
+                  <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] p-4" onClick={(e) => e.stopPropagation()}>
+                    <NavigationPanel
+                      isVisible={isNavigationVisible}
+                      onClose={() => setIsNavigationVisible(false)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modals */}
+            <CreatePodcastModal 
+              isOpen={showCreatePodcast} 
+              onClose={() => setShowCreatePodcast(false)} 
+            />
+            <CreateEpisodeModal 
+              isOpen={showCreateEpisode} 
+              onClose={() => setShowCreateEpisode(false)} 
+            />
           </div>
-        </div>
-      </DocumentProvider>
+        </DocumentProvider>
+      </PodcastProvider>
     </PodcastSettingsProvider>
   );
 };
 
 export default Index;
+

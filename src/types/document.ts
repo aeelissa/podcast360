@@ -8,6 +8,7 @@ export interface Document {
   type: DocumentType;
   createdAt: string;
   modifiedAt: string;
+  episodeId?: string; // Link to episode
   metadata?: {
     podcastName?: string;
     episodeNumber?: number;
