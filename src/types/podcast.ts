@@ -1,4 +1,3 @@
-
 export interface Podcast {
   id: string;
   name: string;
@@ -28,6 +27,7 @@ export interface KnowledgeFile {
   content: string; // base64 encoded
   extractedText?: string; // extracted text content for AI
   uploadedAt: string;
+  podcastId: string; // Add the missing podcastId property
 }
 
 export interface PodcastLevelSettings {

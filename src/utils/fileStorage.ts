@@ -100,8 +100,8 @@ export const fileStorage = {
         return { success: false, error: validation.error };
       }
 
-      // Process file content
-      const result = await fileProcessor.processFile(file);
+      // Process file content - use extractText instead of processFile
+      const result = await fileProcessor.extractText(file);
       
       if (result.success && result.extractedText) {
         // Create file record
