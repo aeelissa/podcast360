@@ -1,19 +1,18 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Podcast, Episode, HierarchyContext } from '../types/podcast';
+import { Podcast, Episode, HierarchyContext, PodcastLevelSettings, EpisodeLevelSettings } from '../types/podcast';
 import { podcastStorage } from '../utils/podcastStorage';
 import { episodeStorage } from '../utils/episodeStorage';
 import { dataMigration } from '../utils/dataMigration';
 
 interface PodcastContextType extends HierarchyContext {
   // Podcast management
-  createPodcast: (name: string, description: string) => Promise<Podcast>;
+  createPodcast: (name: string, description: string, settings?: Partial<PodcastLevelSettings>) => Promise<Podcast>;
   selectPodcast: (podcastId: string) => void;
   updatePodcast: (podcast: Podcast) => void;
   deletePodcast: (podcastId: string) => void;
   
   // Episode management
-  createEpisode: (title: string, description?: string) => Promise<Episode>;
+  createEpisode: (title: string, description?: string, settings?: Partial<EpisodeLevelSettings>) => Promise<Episode>;
   selectEpisode: (episodeId: string) => void;
   updateEpisode: (episode: Episode) => void;
   deleteEpisode: (episodeId: string) => void;
@@ -92,9 +91,9 @@ export const PodcastProvider: React.FC<PodcastProviderProps> = ({ children }) =>
     }
   };
 
-  const createPodcast = async (name: string, description: string): Promise<Podcast> => {
+  const createPodcast = async (name: string, description: string, settings?: Partial<PodcastLevelSettings>): Promise<Podcast> => {
     try {
-      const podcast = podcastStorage.createPodcast(name, description);
+      const podcast = podcastStorage.createPodcast(name, description, settings);
       setAllPodcasts(prev => [...prev, podcast]);
       setCurrentPodcast(podcast);
       setNeedsOnboarding(false);
@@ -130,13 +129,13 @@ export const PodcastProvider: React.FC<PodcastProviderProps> = ({ children }) =>
     }
   };
 
-  const createEpisode = async (title: string, description?: string): Promise<Episode> => {
+  const createEpisode = async (title: string, description?: string, settings?: Partial<EpisodeLevelSettings>): Promise<Episode> => {
     if (!currentPodcast) {
       throw new Error('No podcast selected');
     }
     
     try {
-      const episode = episodeStorage.createEpisode(title, currentPodcast.id, description);
+      const episode = episodeStorage.createEpisode(title, currentPodcast.id, description, settings);
       setEpisodesForCurrentPodcast(prev => [...prev, episode]);
       setCurrentEpisode(episode);
       return episode;

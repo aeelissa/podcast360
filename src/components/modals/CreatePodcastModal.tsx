@@ -48,7 +48,7 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
           audience: audience || 'الجمهور العام',
           brandVoice: brandVoice || 'عربية فصحى معاصرة',
           hostName: hostName || '',
-          showName: name
+          showName: name // Add showName to settings
         },
         advanced: {
           autoSave: true,

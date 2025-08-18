@@ -1,3 +1,4 @@
+
 export interface Podcast {
   id: string;
   name: string;
@@ -37,6 +38,7 @@ export interface PodcastLevelSettings {
     audience: string;
     brandVoice: string;
     hostName?: string;
+    showName?: string; // Make showName optional in the identity
   };
   advanced: {
     autoSave: boolean;

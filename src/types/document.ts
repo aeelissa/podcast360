@@ -11,6 +11,7 @@ export interface Document {
   episodeId?: string; // Link to episode
   metadata?: {
     podcastName?: string;
+    podcastId?: string; // Add podcastId to metadata
     episodeNumber?: number;
     duration?: string;
     targetAudience?: string;
