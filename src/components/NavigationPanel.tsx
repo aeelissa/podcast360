@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Settings, FileText, Users, Mic, Headphones, Globe, CheckCircle, MessageSquare, Download, X, Plus, Upload, File, Edit, Radio, Podcast } from 'lucide-react';
+import { Settings, FileText, X, Plus, Upload, File, Edit, Radio, Podcast } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
 import HierarchyBreadcrumb from './hierarchy/HierarchyBreadcrumb';
 import CreatePodcastModal from './modals/CreatePodcastModal';
@@ -20,19 +20,6 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
   const [showEditPodcast, setShowEditPodcast] = useState(false);
   const [showEditEpisode, setShowEditEpisode] = useState(false);
 
-  const navigationItems = [
-    { icon: <FileText className="w-4 h-4" />, label: 'المشاريع', active: true },
-    { icon: <Mic className="w-4 h-4" />, label: 'التسجيلات', active: false },
-    { icon: <Users className="w-4 h-4" />, label: 'الفريق', active: false },
-    { icon: <Headphones className="w-4 h-4" />, label: 'المكتبة الصوتية', active: false },
-  ];
-
-  const settingsItems = [
-    { icon: <Settings className="w-4 h-4" />, label: 'الإعدادات العامة' },
-    { icon: <Globe className="w-4 h-4" />, label: 'اللغة والمنطقة' },
-    { icon: <Mic className="w-4 h-4" />, label: 'إعدادات الصوت' },
-  ];
-
   if (!isVisible) return null;
 
   return (
@@ -40,7 +27,7 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
       <div className="podcast-panel h-full flex flex-col animate-slide-in-left">
         {/* Header */}
         <div className="podcast-header px-4 py-3 rounded-t-xl flex justify-between items-center flex-shrink-0">
-          <h2 className="font-bold text-right">التنقل والإعدادات</h2>
+          <h2 className="font-bold text-right">إدارة المشروع</h2>
           <button
             onClick={onClose}
             className="text-white/80 hover:text-white transition-colors p-1"
@@ -188,79 +175,18 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
               </div>
             )}
 
-            {/* Navigation Section */}
+            {/* Navigation Section - Only Projects */}
             <div className="p-4 border-b border-podcast-border">
               <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">التنقل</h3>
               <div className="space-y-1">
-                {navigationItems.map((item, index) => (
-                  <button
-                    key={index}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-right font-medium ${
-                      item.active
-                        ? 'bg-podcast-blue text-white'
-                        : 'text-podcast-gray hover:bg-podcast-blue/10 hover:text-podcast-blue'
-                    }`}
-                  >
-                    <span className="mr-auto">{item.label}</span>
-                    {item.icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Settings Section */}
-            <div className="p-4 border-b border-podcast-border">
-              <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">الإعدادات</h3>
-              <div className="space-y-1">
-                {settingsItems.map((item, index) => (
-                  <button
-                    key={index}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray hover:bg-podcast-blue/10 hover:text-podcast-blue transition-all text-right font-medium"
-                  >
-                    <span className="mr-auto">{item.label}</span>
-                    {item.icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Work Status Section */}
-            <div className="p-4 border-b border-podcast-border">
-              <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">حالة العمل</h3>
-              <div className="flex justify-end">
-                <div className="inline-flex items-center gap-2 bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-xs font-bold">
-                  مسودة
-                  <div className="w-2 h-2 bg-podcast-gold rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border-b border-podcast-border">
-              <div className="space-y-2">
-                <button
-                  disabled
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed text-right font-medium"
-                >
-                  <span className="mr-auto">اعتماد المدير</span>
-                  <CheckCircle className="w-4 h-4" />
-                </button>
-                <button
-                  disabled
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed text-right font-medium"
-                >
-                  <span className="mr-auto">تعليق المدير</span>
-                  <MessageSquare className="w-4 h-4" />
-                </button>
-                <button
-                  disabled
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-podcast-gray/50 bg-podcast-gray/10 cursor-not-allowed text-right font-medium"
-                >
-                  <span className="mr-auto">تصدير</span>
-                  <Download className="w-4 h-4" />
+                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm bg-podcast-blue text-white transition-all text-right font-medium">
+                  <span className="mr-auto">المشاريع</span>
+                  <FileText className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
+            {/* Project Info */}
             <div className="p-4">
               <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-4">
                 <h4 className="font-bold text-podcast-blue mb-1 text-sm text-right">

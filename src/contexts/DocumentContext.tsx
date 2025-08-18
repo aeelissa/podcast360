@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Document } from '../types/document';
 import { usePodcast } from './PodcastContext';
@@ -37,21 +38,30 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
   // Get podcast context to sync with current episode
   const { currentEpisode, currentPodcast } = usePodcast();
 
-  // Auto-sync documents when episode changes
+  // Enhanced auto-sync when episode changes
   useEffect(() => {
     if (currentEpisode && currentPodcast) {
-      console.log('Episode changed, updating document context:', {
+      console.log('Episode context changed, updating document context:', {
         podcast: currentPodcast.name,
-        episode: currentEpisode.title
+        episode: currentEpisode.title,
+        previousDocument: activeDocument?.type
       });
       
-      // Clear active document when switching episodes
-      // The document editor will handle loading episode-specific documents
+      // Clear document context when switching episodes for clean slate
       setActiveDocument(null);
       setCursorPosition(null);
       setCurrentSection(null);
+      
+      // Log the context switch
+      console.log('Document context cleared for new episode');
+    } else if (!currentEpisode) {
+      // Clear everything when no episode is selected
+      setActiveDocument(null);
+      setCursorPosition(null);
+      setCurrentSection(null);
+      console.log('Document context cleared - no episode selected');
     }
-  }, [currentEpisode, currentPodcast]);
+  }, [currentEpisode?.id, currentPodcast?.id]); // Only trigger on ID changes
 
   const getDocumentSections = (): DocumentSection[] => {
     if (!activeDocument?.content) return [];
@@ -62,7 +72,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
     let currentTitle = '';
     let currentLevel = 0;
     
-    lines.forEach((line, index) => {
+    lines.forEach((line) => {
       const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
       
       if (headingMatch) {
@@ -108,7 +118,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
   };
 
   const insertContentAtCursor = (content: string) => {
-    console.log('DocumentContext: Inserting content at cursor:', content);
+    console.log('DocumentContext: Inserting content at cursor:', content.substring(0, 100) + '...');
     console.log('Current context:', {
       podcast: currentPodcast?.name,
       episode: currentEpisode?.title,
@@ -116,7 +126,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
     });
     
     if (activeDocument) {
-      // Enhanced insertion logic - try to be smarter about placement
+      // Enhanced insertion logic with better content formatting
       const existingContent = activeDocument.content;
       let updatedContent: string;
       
@@ -131,11 +141,21 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
         updatedContent = existingContent + separator + content;
       }
       
-      setActiveDocument({
+      const updatedDocument = {
         ...activeDocument,
         content: updatedContent,
         modifiedAt: new Date().toISOString()
+      };
+      
+      setActiveDocument(updatedDocument);
+      
+      console.log('Content inserted successfully:', {
+        originalLength: existingContent.length,
+        newLength: updatedContent.length,
+        addedLength: content.length
       });
+    } else {
+      console.warn('Cannot insert content: No active document');
     }
   };
 
@@ -148,11 +168,16 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({ children }) 
       documentId: activeDocument?.id || null,
       episodeId: currentEpisode?.id || null,
       podcastId: currentPodcast?.id || null,
-      sectionKey: getCurrentSectionKey()
+      sectionKey: getCurrentSectionKey(),
+      context: {
+        podcastName: currentPodcast?.name,
+        episodeTitle: currentEpisode?.title,
+        documentType: activeDocument?.type
+      }
     };
     notes.push(newNote);
     localStorage.setItem('podcast360_notes', JSON.stringify(notes));
-    console.log('Saved as note with episode context:', newNote);
+    console.log('Saved as note with enhanced episode context:', newNote);
   };
 
   return (

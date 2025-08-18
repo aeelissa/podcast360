@@ -9,27 +9,40 @@ export const useDocumentManager = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [activeDocument, setActiveDocument] = useState<Document | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  const [isLoading, setIsLoading] = useState(false);
   
   // Get current episode context
   const { currentEpisode, currentPodcast } = usePodcast();
 
   // Load episode-specific documents when episode changes
   useEffect(() => {
-    if (currentEpisode) {
-      console.log('Loading documents for episode:', currentEpisode.title);
-      const episodeDocuments = documentStorage.getDocumentsByEpisode(currentEpisode.id);
-      setDocuments(episodeDocuments);
-      
-      // Auto-select concept document if available, or first document
-      const conceptDoc = episodeDocuments.find(doc => doc.type === 'concept');
-      const firstDoc = episodeDocuments.length > 0 ? episodeDocuments[0] : null;
-      setActiveDocument(conceptDoc || firstDoc);
-    } else {
-      // Clear documents when no episode is selected
-      setDocuments([]);
-      setActiveDocument(null);
-    }
-  }, [currentEpisode]);
+    const loadDocuments = async () => {
+      if (currentEpisode) {
+        setIsLoading(true);
+        console.log('Loading documents for episode:', currentEpisode.title);
+        
+        try {
+          const episodeDocuments = documentStorage.getDocumentsByEpisode(currentEpisode.id);
+          setDocuments(episodeDocuments);
+          
+          // Clear active document when switching episodes
+          setActiveDocument(null);
+          
+          console.log(`Loaded ${episodeDocuments.length} documents for episode: ${currentEpisode.title}`);
+        } catch (error) {
+          console.error('Error loading documents:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // Clear documents when no episode is selected
+        setDocuments([]);
+        setActiveDocument(null);
+      }
+    };
+
+    loadDocuments();
+  }, [currentEpisode?.id]); // Only depend on episode ID to avoid unnecessary reloads
 
   // Generate document ID with episode context
   const generateDocumentId = (type: DocumentType): string => {
@@ -38,13 +51,13 @@ export const useDocumentManager = () => {
     return `podcast360_${episodeId}_${type}_${timestamp}`;
   };
 
-  // Create a new document from template for current episode
+  // Create a new document from template for current episode with enhanced content
   const createDocument = useCallback((type: DocumentType): Document => {
     if (!currentEpisode) {
       throw new Error('No episode selected. Cannot create document.');
     }
 
-    const template = createDocumentFromTemplate(type);
+    const template = createDocumentFromTemplate(type, currentPodcast || undefined, currentEpisode);
     const now = new Date().toISOString();
     
     const newDocument: Document = {
@@ -58,23 +71,25 @@ export const useDocumentManager = () => {
       metadata: {
         ...template.metadata,
         podcastId: currentPodcast?.id,
-        episodeId: currentEpisode.id
+        episodeId: currentEpisode.id,
+        podcastName: currentPodcast?.name
       }
     };
 
     documentStorage.saveDocument(newDocument);
     setDocuments(prev => [...prev, newDocument]);
     
-    console.log('Created document for episode:', {
+    console.log('Created enhanced document for episode:', {
       document: newDocument.title,
       episode: currentEpisode.title,
-      podcast: currentPodcast?.name
+      podcast: currentPodcast?.name,
+      contentLength: newDocument.content.length
     });
     
     return newDocument;
   }, [currentEpisode, currentPodcast]);
 
-  // Get or create document for current episode - with null checks
+  // Get or create document for current episode
   const getOrCreateDocument = useCallback((type: DocumentType): Document => {
     if (!currentEpisode) {
       throw new Error('No episode selected. Cannot get or create document.');
@@ -120,7 +135,8 @@ export const useDocumentManager = () => {
     console.log('Saved document:', {
       document: updatedDocument.title,
       episode: currentEpisode?.title,
-      podcast: currentPodcast?.name
+      podcast: currentPodcast?.name,
+      contentLength: updatedDocument.content.length
     });
 
     // Simulate save delay for user feedback
@@ -147,6 +163,7 @@ export const useDocumentManager = () => {
     activeDocument,
     setActiveDocument,
     saveStatus,
+    isLoading,
     getOrCreateDocument,
     safeGetOrCreateDocument,
     updateDocumentContent,
