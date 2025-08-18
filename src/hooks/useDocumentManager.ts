@@ -74,7 +74,7 @@ export const useDocumentManager = () => {
     return newDocument;
   }, [currentEpisode, currentPodcast]);
 
-  // Get or create document for current episode
+  // Get or create document for current episode - with null checks
   const getOrCreateDocument = useCallback((type: DocumentType): Document => {
     if (!currentEpisode) {
       throw new Error('No episode selected. Cannot get or create document.');
@@ -86,6 +86,21 @@ export const useDocumentManager = () => {
     }
     return createDocument(type);
   }, [documents, currentEpisode, createDocument]);
+
+  // Safe version that returns null instead of throwing
+  const safeGetOrCreateDocument = useCallback((type: DocumentType): Document | null => {
+    if (!currentEpisode) {
+      console.warn('No episode selected. Cannot get or create document.');
+      return null;
+    }
+
+    try {
+      return getOrCreateDocument(type);
+    } catch (error) {
+      console.error('Error getting or creating document:', error);
+      return null;
+    }
+  }, [currentEpisode, getOrCreateDocument]);
 
   // Save document with enhanced context logging
   const saveDocument = useCallback((document: Document) => {
@@ -133,6 +148,7 @@ export const useDocumentManager = () => {
     setActiveDocument,
     saveStatus,
     getOrCreateDocument,
+    safeGetOrCreateDocument,
     updateDocumentContent,
     saveDocument,
     currentEpisodeContext: currentEpisode
