@@ -31,11 +31,7 @@ const DemoBanner = () => {
             </div>
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-2 flex-shrink-0"></span>
-              <span>بدّل بين 'معاينة' و'مصدر' لعرض المحتوى أو هيكله.</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-2 flex-shrink-0"></span>
-              <span>اطلع على محادثة AI التجريبية في اليسار.</span>
+              <span>اطلع على محادثة AI التجريبية في يمين الشاشة.</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 bg-podcast-blue rounded-full mt-2 flex-shrink-0"></span>
