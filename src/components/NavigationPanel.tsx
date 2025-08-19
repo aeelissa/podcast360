@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Users, Book, ChevronDown, ChevronRight } from 'lucide-react';
+import { Users, Book, ChevronDown, ChevronRight, ChevronLeft, Menu } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
 import PodcastSelector from './hierarchy/PodcastSelector';
 import EpisodeSelector from './hierarchy/EpisodeSelector';
@@ -9,19 +9,12 @@ import EditPodcastModal from './modals/EditPodcastModal';
 import CreateEpisodeModal from './modals/CreateEpisodeModal';
 import EditEpisodeModal from './modals/EditEpisodeModal';
 import KnowledgeBasePanel from './knowledge/KnowledgeBasePanel';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarTrigger,
-  useSidebar,
-} from './ui/sidebar';
 
 const NavigationPanel = () => {
   const { currentPodcast, currentEpisode } = usePodcast();
-  const { state } = useSidebar();
   const [activeView, setActiveView] = useState<'navigation' | 'knowledge'>('navigation');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['podcasts']));
+  const [isMinimized, setIsMinimized] = useState(false);
   
   // Modal states
   const [showCreatePodcast, setShowCreatePodcast] = useState(false);
@@ -51,16 +44,16 @@ const NavigationPanel = () => {
         >
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
-            {state === 'expanded' && <span className="font-medium">إدارة البودكاست</span>}
+            {!isMinimized && <span className="font-medium">إدارة البودكاست</span>}
           </div>
-          {state === 'expanded' && (
+          {!isMinimized && (
             expandedSections.has('podcasts') ? 
               <ChevronDown className="w-4 h-4" /> : 
               <ChevronRight className="w-4 h-4" />
           )}
         </button>
 
-        {expandedSections.has('podcasts') && state === 'expanded' && (
+        {expandedSections.has('podcasts') && !isMinimized && (
           <div className="space-y-3 pr-6">
             <PodcastSelector
               onCreatePodcast={() => setShowCreatePodcast(true)}
@@ -76,7 +69,7 @@ const NavigationPanel = () => {
       </div>
 
       {/* Current Context Display */}
-      {(currentPodcast || currentEpisode) && state === 'expanded' && (
+      {(currentPodcast || currentEpisode) && !isMinimized && (
         <div className="border border-podcast-border rounded-lg p-3 bg-podcast-gold/5 text-rtl">
           <h4 className="font-medium text-sm mb-2 text-right">السياق الحالي</h4>
           {currentPodcast && (
@@ -96,16 +89,23 @@ const NavigationPanel = () => {
 
   return (
     <>
-      <Sidebar className="border-l-0 border-r border-podcast-border">
-        {/* Enhanced Header with View Switcher */}
-        <SidebarHeader className="podcast-header px-4 py-3">
+      <div className={`border-r border-podcast-border transition-all duration-300 ${
+        isMinimized ? 'w-16' : 'w-64'
+      }`}>
+        {/* Header with minimize button */}
+        <div className="podcast-header px-4 py-3">
           <div className="flex items-center justify-between mb-3 text-rtl">
-            <SidebarTrigger className="mr-2" />
-            {state === 'expanded' && <h2 className="font-bold text-right">لوحة التنقل</h2>}
+            <button
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="p-1 rounded-md hover:bg-white/20 transition-colors"
+            >
+              {isMinimized ? <Menu className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+            {!isMinimized && <h2 className="font-bold text-right">لوحة التنقل</h2>}
           </div>
           
           {/* View Switcher - only show when expanded */}
-          {state === 'expanded' && (
+          {!isMinimized && (
             <div className="flex gap-1 bg-white/20 rounded-lg p-1">
               <button
                 onClick={() => setActiveView('navigation')}
@@ -131,10 +131,10 @@ const NavigationPanel = () => {
               </button>
             </div>
           )}
-        </SidebarHeader>
+        </div>
 
         {/* Dynamic Content Based on Active View */}
-        <SidebarContent className="overflow-hidden">
+        <div className="h-full overflow-hidden">
           {activeView === 'navigation' && (
             <div className="h-full overflow-y-auto p-4 space-y-4">
               {renderNavigationContent()}
@@ -142,8 +142,8 @@ const NavigationPanel = () => {
           )}
           
           {activeView === 'knowledge' && <KnowledgeBasePanel />}
-        </SidebarContent>
-      </Sidebar>
+        </div>
+      </div>
 
       {/* Modals */}
       <CreatePodcastModal
