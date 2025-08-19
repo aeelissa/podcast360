@@ -35,42 +35,57 @@ export const DOCUMENT_SCHEMAS: Record<string, DocumentSchema> = {
 };
 
 export const getSystemPrompt = (documentType: 'concept' | 'preparation' | 'script', podcastContext: string): string => {
-  const basePrompt = `أنت مساعد ذكي متخصص في إنتاج البودكاست باللغة العربية. ${podcastContext}`;
-  
-  switch (documentType) {
-    case 'concept':
-      return `${basePrompt}
+  // Load prompts from admin configuration
+  let prompts;
+  try {
+    const adminConfig = localStorage.getItem('podcast360_admin_config');
+    if (adminConfig) {
+      const config = JSON.parse(adminConfig);
+      prompts = config.aiPrompts;
+    }
+  } catch (error) {
+    console.error('Error loading prompts from admin config:', error);
+  }
 
-أنت تساعد في تطوير ورقة التصور للحلقة. ركز على:
+  // Fallback to defaults if no admin config found
+  if (!prompts) {
+    prompts = {
+      baseSystemPrompt: `أنت مساعد ذكي متخصص في إنتاج البودكاست باللغة العربية. ${podcastContext}`,
+      conceptPrompt: `أنت تساعد في تطوير ورقة التصور للحلقة. ركز على:
 - تحديد الفكرة الرئيسية وأهدافها
 - تحليل الجمهور المستهدف
 - استخراج النقاط الأساسية
 - اقتراح هيكل الحلقة
 
-اجعل اقتراحاتك محددة وقابلة للتطبيق العملي. استخدم لغة واضحة ومباشرة.`;
-
-    case 'preparation':
-      return `${basePrompt}
-
-أنت تساعد في إعداد الحلقة وتجهيز المواد. ركز على:
+اجعل اقتراحاتك محددة وقابلة للتطبيق العملي. استخدم لغة واضحة ومباشرة.`,
+      
+      preparationPrompt: `أنت تساعد في إعداد الحلقة وتجهيز المواد. ركز على:
 - اقتراح مصادر موثوقة للمحتوى
 - تطوير أسئلة جوهرية
 - تنظيم البحث والملاحظات
 - التحضير التقني للتسجيل
 
-قدم اقتراحات عملية ومنظمة تساعد في الإعداد الفعال.`;
-
-    case 'script':
-      return `${basePrompt}
-
-أنت تساعد في كتابة سكربت الحلقة. ركز على:
+قدم اقتراحات عملية ومنظمة تساعد في الإعداد الفعال.`,
+      
+      scriptPrompt: `أنت تساعد في كتابة سكربت الحلقة. ركز على:
 - صياغة مقدمة جذابة
 - تنظيم المحتوى الرئيسي بطريقة منطقية
 - كتابة خاتمة قوية
 - إضافة دعوات للعمل مناسبة
 
-اكتب بأسلوب طبيعي ومتدفق يناسب الحديث المسموع. تجنب الأسلوب الكتابي الجاف.`;
+اكتب بأسلوب طبيعي ومتدفق يناسب الحديث المسموع. تجنب الأسلوب الكتابي الجاف.`
+    };
+  }
 
+  const basePrompt = `${prompts.baseSystemPrompt} ${podcastContext}`;
+  
+  switch (documentType) {
+    case 'concept':
+      return `${basePrompt}\n\n${prompts.conceptPrompt}`;
+    case 'preparation':
+      return `${basePrompt}\n\n${prompts.preparationPrompt}`;
+    case 'script':
+      return `${basePrompt}\n\n${prompts.scriptPrompt}`;
     default:
       return basePrompt;
   }

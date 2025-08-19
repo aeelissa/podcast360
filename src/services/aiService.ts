@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AIServiceConfig {
@@ -17,10 +16,27 @@ class AIService {
   private genAI: GoogleGenerativeAI | null = null;
 
   constructor() {
-    // Load API key from localStorage on initialization
-    this.apiKey = localStorage.getItem('podcast360_ai_api_key') || '';
-    if (this.apiKey) {
-      this.genAI = new GoogleGenerativeAI(this.apiKey);
+    // Load API key from admin configuration
+    this.loadApiKeyFromConfig();
+  }
+
+  private loadApiKeyFromConfig() {
+    try {
+      const adminConfig = localStorage.getItem('podcast360_admin_config');
+      if (adminConfig) {
+        const config = JSON.parse(adminConfig);
+        this.apiKey = config.apiKeys?.googleGemini || '';
+      } else {
+        // Fallback to old storage method
+        this.apiKey = localStorage.getItem('podcast360_ai_api_key') || '';
+      }
+      
+      if (this.apiKey) {
+        this.genAI = new GoogleGenerativeAI(this.apiKey);
+      }
+    } catch (error) {
+      console.error('Error loading API key from config:', error);
+      this.apiKey = '';
     }
   }
 
@@ -80,6 +96,10 @@ class AIService {
     } else {
       this.genAI = null;
     }
+  }
+
+  refreshFromConfig() {
+    this.loadApiKeyFromConfig();
   }
 
   isConfigured(): boolean {

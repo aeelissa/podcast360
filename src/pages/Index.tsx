@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
@@ -9,6 +8,7 @@ import HierarchyBreadcrumb from '../components/hierarchy/HierarchyBreadcrumb';
 import { DocumentProvider } from '../contexts/DocumentContext';
 import { PodcastSettingsProvider } from '../contexts/PodcastSettingsContext';
 import { PodcastProvider } from '../contexts/PodcastContext';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const [isNavigationVisible, setIsNavigationVisible] = useState(false);
@@ -39,6 +39,12 @@ const Index = () => {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  <Link
+                    to="/admin"
+                    className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium hover:bg-podcast-gold/30 transition-colors"
+                  >
+                    لوحة الإدارة
+                  </Link>
                   <div className="bg-podcast-gold/20 text-podcast-gold-dark px-3 py-1 rounded-full text-sm font-medium">
                     MVP
                   </div>

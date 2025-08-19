@@ -1,7 +1,51 @@
-
-import { PodcastSettings, DEFAULT_PODCAST_SETTINGS } from '../types/settings';
+import { PodcastSettings } from '../types/settings';
 
 const SETTINGS_KEY = 'podcast360_settings';
+
+// Load default settings from admin configuration
+const getDefaultSettings = (): PodcastSettings => {
+  try {
+    const adminConfig = localStorage.getItem('podcast360_admin_config');
+    if (adminConfig) {
+      const config = JSON.parse(adminConfig);
+      if (config.defaultPodcast) {
+        return config.defaultPodcast;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading default settings from admin config:', error);
+  }
+
+  // Fallback to hardcoded defaults
+  return {
+    identity: {
+      tone: 'ودودة ومهنية',
+      style: ['تفاعلي', 'تعليمي'],
+      audience: 'المهتمين بالتكنولوجيا',
+      brandVoice: 'عربية فصحى معاصرة',
+      showName: 'Podcast360'
+    },
+    episode: {
+      goals: [
+        'تعريف المستمعين بالذكاء الاصطناعي',
+        'شرح فوائد التكنولوجيا الحديثة',
+        'تقديم نصائح عملية للاستخدام'
+      ],
+      successCriteria: [
+        'زيادة المشاركة بنسبة 25%',
+        'الحصول على تقييم 4.5 نجوم أو أكثر',
+        'تحقيق 1000 استماع في الأسبوع الأول'
+      ],
+      duration: 45,
+      contentType: 'مقابلة'
+    },
+    advanced: {
+      autoSave: true,
+      aiSuggestions: true,
+      exportFormat: 'docx'
+    }
+  };
+};
 
 export const settingsStorage = {
   // Get settings from localStorage
@@ -10,19 +54,20 @@ export const settingsStorage = {
       const stored = localStorage.getItem(SETTINGS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
+        const defaultSettings = getDefaultSettings();
         // Merge with defaults to ensure all properties exist
         return {
-          ...DEFAULT_PODCAST_SETTINGS,
+          ...defaultSettings,
           ...parsed,
-          identity: { ...DEFAULT_PODCAST_SETTINGS.identity, ...parsed.identity },
-          episode: { ...DEFAULT_PODCAST_SETTINGS.episode, ...parsed.episode },
-          advanced: { ...DEFAULT_PODCAST_SETTINGS.advanced, ...parsed.advanced }
+          identity: { ...defaultSettings.identity, ...parsed.identity },
+          episode: { ...defaultSettings.episode, ...parsed.episode },
+          advanced: { ...defaultSettings.advanced, ...parsed.advanced }
         };
       }
-      return DEFAULT_PODCAST_SETTINGS;
+      return getDefaultSettings();
     } catch (error) {
       console.error('Error loading settings:', error);
-      return DEFAULT_PODCAST_SETTINGS;
+      return getDefaultSettings();
     }
   },
 
