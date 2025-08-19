@@ -98,8 +98,28 @@ ${settings.identity.hostName ? `- اسم المضيف: ${settings.identity.hostN
 - معايير النجاح: ${settings.episode.successCriteria.join(', ')}
     `;
 
-    return podcastContext + '\n\n' + documentContext;
-  }, [activeDocument, settings, getDocumentSections, getFullDocumentContent]);
+    // Add knowledge base context from uploaded files
+    let knowledgeContext = '';
+    if (currentSessionKey?.documentId) {
+      const { fileStorage } = require('../utils/fileStorage');
+      const files = fileStorage.getFilesBySession(currentSessionKey.documentId);
+      
+      if (files.length > 0) {
+        knowledgeContext = `
+
+قاعدة المعرفة المتاحة:
+${files.map(file => `
+- ${file.name}:
+${file.extractedText ? file.extractedText.substring(0, 500) + (file.extractedText.length > 500 ? '...' : '') : 'لم يتم استخراج النص'}
+`).join('\n')}
+
+تعليمات: استخدم المعلومات من قاعدة المعرفة لتحسين إجاباتك وجعلها أكثر دقة ومفصلة.
+        `;
+      }
+    }
+
+    return podcastContext + '\n\n' + documentContext + knowledgeContext;
+  }, [activeDocument, settings, getDocumentSections, getFullDocumentContent, currentSessionKey]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || !currentSessionKey) return;

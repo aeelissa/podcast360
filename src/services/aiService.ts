@@ -14,18 +14,24 @@ interface AIMessage {
 
 class AIService {
   private apiKey: string;
-  private genAI: GoogleGenerativeAI;
+  private genAI: GoogleGenerativeAI | null = null;
 
   constructor() {
-    // Hardcoded API key for now
-    this.apiKey = 'AIzaSyBR05Dc_zguw9nGpJJ_IR2mtSmUu4KcTZg';
-    this.genAI = new GoogleGenerativeAI(this.apiKey);
+    // Load API key from localStorage on initialization
+    this.apiKey = localStorage.getItem('podcast360_ai_api_key') || '';
+    if (this.apiKey) {
+      this.genAI = new GoogleGenerativeAI(this.apiKey);
+    }
   }
 
   async chat(
     messages: AIMessage[],
     config: AIServiceConfig = {}
   ): Promise<string> {
+    if (!this.genAI || !this.apiKey) {
+      throw new Error('لم يتم تكوين مفتاح API. يرجى إضافة مفتاح Google Gemini API في الإعدادات.');
+    }
+
     const { model = 'gemini-1.5-flash', temperature = 0.7 } = config;
 
     try {
@@ -38,8 +44,6 @@ class AIService {
       });
 
       // Convert messages to Gemini format
-      // Gemini expects a conversation history and doesn't have system messages in the same way
-      // We'll prepend system message as part of the first user message
       const systemMessage = messages.find(m => m.role === 'system');
       const conversationMessages = messages.filter(m => m.role !== 'system');
       
@@ -62,17 +66,30 @@ class AIService {
       return response.text() || 'عذراً، لم أتمكن من الحصول على إجابة.';
     } catch (error) {
       console.error('AI Service Error:', error);
+      if (error instanceof Error && error.message.includes('API_KEY')) {
+        throw new Error('مفتاح API غير صالح. يرجى التحقق من صحة المفتاح في الإعدادات.');
+      }
       throw new Error('فشل في الاتصال بخدمة الذكاء الاصطناعي');
     }
   }
 
   setApiKey(key: string) {
     this.apiKey = key;
-    this.genAI = new GoogleGenerativeAI(key);
+    if (key) {
+      this.genAI = new GoogleGenerativeAI(key);
+    } else {
+      this.genAI = null;
+    }
   }
 
   isConfigured(): boolean {
     return !!this.apiKey && !!this.genAI;
+  }
+
+  getApiKeyStatus(): 'missing' | 'configured' | 'invalid' {
+    if (!this.apiKey) return 'missing';
+    if (!this.genAI) return 'invalid';
+    return 'configured';
   }
 }
 

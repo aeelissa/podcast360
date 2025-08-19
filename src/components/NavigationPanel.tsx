@@ -1,184 +1,177 @@
 
 import React, { useState } from 'react';
-import { Settings, FileText, X, Plus, Upload, File, Edit, Radio, Podcast } from 'lucide-react';
+import { Settings, Users, Book, Key, ChevronDown, ChevronRight } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
-import CreatePodcastModal from './modals/CreatePodcastModal';
-import CreateEpisodeModal from './modals/CreateEpisodeModal';
-import EditPodcastModal from './modals/EditPodcastModal';
-import EditEpisodeModal from './modals/EditEpisodeModal';
 import PodcastSelector from './hierarchy/PodcastSelector';
 import EpisodeSelector from './hierarchy/EpisodeSelector';
+import CreatePodcastModal from './modals/CreatePodcastModal';
+import EditPodcastModal from './modals/EditPodcastModal';
+import CreateEpisodeModal from './modals/CreateEpisodeModal';
+import EditEpisodeModal from './modals/EditEpisodeModal';
+import KnowledgeBasePanel from './knowledge/KnowledgeBasePanel';
+import APIKeyManager from './settings/APIKeyManager';
 
-interface NavigationPanelProps {
-  isVisible: boolean;
-  onClose: () => void;
-}
-
-const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose }) => {
-  const { currentPodcast, currentEpisode, needsOnboarding } = usePodcast();
+const NavigationPanel = () => {
+  const { currentPodcast, currentEpisode } = usePodcast();
+  const [activeView, setActiveView] = useState<'navigation' | 'knowledge' | 'settings'>('navigation');
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['podcasts']));
+  
+  // Modal states
   const [showCreatePodcast, setShowCreatePodcast] = useState(false);
-  const [showCreateEpisode, setShowCreateEpisode] = useState(false);
   const [showEditPodcast, setShowEditPodcast] = useState(false);
+  const [showCreateEpisode, setShowCreateEpisode] = useState(false);
   const [showEditEpisode, setShowEditEpisode] = useState(false);
 
-  if (!isVisible) return null;
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
+  const renderNavigationContent = () => (
+    <>
+      {/* Podcast Management Section */}
+      <div className="space-y-3">
+        <button
+          onClick={() => toggleSection('podcasts')}
+          className="w-full flex items-center justify-between p-3 text-right hover:bg-podcast-gold/10 rounded-lg transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            <span className="font-medium">إدارة البودكاست</span>
+          </div>
+          {expandedSections.has('podcasts') ? 
+            <ChevronDown className="w-4 h-4" /> : 
+            <ChevronRight className="w-4 h-4" />
+          }
+        </button>
+
+        {expandedSections.has('podcasts') && (
+          <div className="space-y-3 pr-6">
+            <PodcastSelector
+              onCreateNew={() => setShowCreatePodcast(true)}
+              onEdit={() => setShowEditPodcast(true)}
+            />
+            
+            {currentPodcast && (
+              <EpisodeSelector
+                onCreateNew={() => setShowCreateEpisode(true)}
+                onEdit={() => setShowEditEpisode(true)}
+              />
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Current Context Display */}
+      {(currentPodcast || currentEpisode) && (
+        <div className="border border-podcast-border rounded-lg p-3 bg-podcast-gold/5">
+          <h4 className="font-medium text-sm mb-2 text-right">السياق الحالي</h4>
+          {currentPodcast && (
+            <p className="text-xs text-podcast-gray text-right mb-1">
+              البودكاست: {currentPodcast.name}
+            </p>
+          )}
+          {currentEpisode && (
+            <p className="text-xs text-podcast-gray text-right">
+              الحلقة: {currentEpisode.title}
+            </p>
+          )}
+        </div>
+      )}
+    </>
+  );
 
   return (
     <>
-      <div className="podcast-panel h-full flex flex-col animate-slide-in-left">
-        {/* Header */}
-        <div className="podcast-header px-4 py-3 rounded-t-xl flex justify-between items-center flex-shrink-0">
-          <h2 className="font-bold text-right">إدارة المشروع</h2>
-          <button
-            onClick={onClose}
-            className="text-white/80 hover:text-white transition-colors p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-hidden relative">
-          <div className="h-full overflow-y-auto scroll-smooth">
-            {/* Enhanced Management Section */}
-            <div className="p-4 border-b border-podcast-border">
-              <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">إدارة البودكاست</h3>
-              
-              {needsOnboarding ? (
-                <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3 mb-3">
-                  <p className="text-xs text-podcast-gray text-right leading-relaxed mb-2">
-                    ابدأ بإنشاء بودكاست جديد مع إعداداته
-                  </p>
-                  <button
-                    onClick={() => setShowCreatePodcast(true)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-podcast-blue text-white hover:bg-podcast-blue/90 transition-colors text-right font-medium justify-center"
-                  >
-                    <Plus className="w-3 h-3" />
-                    إنشاء بودكاست جديد
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Interactive Podcast Selector */}
-                  <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <button
-                        onClick={() => setShowEditPodcast(true)}
-                        className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors p-1"
-                        title="تحرير إعدادات البودكاست"
-                        disabled={!currentPodcast}
-                      >
-                        <Edit className="w-3 h-3" />
-                      </button>
-                      <div className="flex-1">
-                        <PodcastSelector onCreatePodcast={() => setShowCreatePodcast(true)} />
-                      </div>
-                    </div>
-                    {currentPodcast && (
-                      <p className="text-xs text-podcast-gray text-right">
-                        {currentPodcast.description || 'لا يوجد وصف'}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Interactive Episode Selector */}
-                  {currentPodcast && (
-                    <div className="bg-podcast-gold/10 border border-podcast-gold/20 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <button
-                          onClick={() => setShowEditEpisode(true)}
-                          className="text-xs text-podcast-gold-dark hover:text-podcast-gold-dark/80 transition-colors p-1"
-                          title="تحرير إعدادات الحلقة"
-                          disabled={!currentEpisode}
-                        >
-                          <Edit className="w-3 h-3" />
-                        </button>
-                        <div className="flex-1">
-                          <EpisodeSelector onCreateEpisode={() => setShowCreateEpisode(true)} />
-                        </div>
-                      </div>
-                      {currentEpisode && (
-                        <p className="text-xs text-podcast-gray text-right">
-                          {currentEpisode.description || 'لا يوجد وصف'}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Knowledge Base Section */}
-            {currentPodcast && (
-              <div className="p-4 border-b border-podcast-border">
-                <div className="flex items-center gap-2 mb-3 justify-end">
-                  <button className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors flex items-center gap-1">
-                    <Upload className="w-3 h-3" />
-                    رفع ملف
-                  </button>
-                  <h3 className="font-bold text-podcast-gray text-sm">قاعدة المعرفة</h3>
-                </div>
-                
-                {currentPodcast.knowledgeBase.length > 0 ? (
-                  <div className="space-y-2">
-                    {currentPodcast.knowledgeBase.slice(0, 3).map((file) => (
-                      <div key={file.id} className="flex items-center gap-2 bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-2">
-                        <File className="w-3 h-3 text-podcast-blue flex-shrink-0" />
-                        <span className="text-xs text-podcast-gray truncate flex-1">{file.name}</span>
-                      </div>
-                    ))}
-                    <div className="text-xs text-podcast-gray text-right">
-                      {currentPodcast.knowledgeBase.length}/5 ملفات مرفوعة
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
-                    <p className="text-xs text-podcast-gray text-right leading-relaxed">
-                      لم يتم رفع أي ملفات بعد
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Project Info */}
-            <div className="p-4">
-              <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-4">
-                <h4 className="font-bold text-podcast-blue mb-1 text-sm text-right">
-                  {currentPodcast?.name || 'Podcast360'} - MVP
-                </h4>
-                <p className="text-xs text-podcast-gray text-right leading-relaxed">
-                  {currentEpisode ? `الحلقة: ${currentEpisode.title}` : 'مشروع تجريبي لمنصة البودكاست'}
-                </p>
-                <div className="mt-3 flex items-center gap-2 justify-end">
-                  <span className="text-xs text-podcast-gray">متصل</span>
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-            </div>
+      <div className="podcast-panel h-full flex flex-col">
+        {/* Enhanced Header with View Switcher */}
+        <div className="podcast-header px-4 py-3 rounded-t-xl">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-bold text-right">لوحة التنقل</h2>
           </div>
           
-          {/* Scroll shadows */}
-          <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+          {/* View Switcher */}
+          <div className="flex gap-1 bg-white/20 rounded-lg p-1">
+            <button
+              onClick={() => setActiveView('navigation')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors ${
+                activeView === 'navigation'
+                  ? 'bg-white text-podcast-gold-dark shadow-sm'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              التنقل
+            </button>
+            <button
+              onClick={() => setActiveView('knowledge')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors ${
+                activeView === 'knowledge'
+                  ? 'bg-white text-podcast-gold-dark shadow-sm'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Book className="w-4 h-4" />
+              المعرفة
+            </button>
+            <button
+              onClick={() => setActiveView('settings')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors ${
+                activeView === 'settings'
+                  ? 'bg-white text-podcast-gold-dark shadow-sm'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Key className="w-4 h-4" />
+              الإعدادات
+            </button>
+          </div>
+        </div>
+
+        {/* Dynamic Content Based on Active View */}
+        <div className="flex-1 overflow-hidden">
+          {activeView === 'navigation' && (
+            <div className="h-full overflow-y-auto p-4 space-y-4">
+              {renderNavigationContent()}
+            </div>
+          )}
+          
+          {activeView === 'knowledge' && <KnowledgeBasePanel />}
+          
+          {activeView === 'settings' && (
+            <div className="h-full overflow-y-auto p-4">
+              <APIKeyManager />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Modals */}
-      <CreatePodcastModal 
-        isOpen={showCreatePodcast} 
-        onClose={() => setShowCreatePodcast(false)} 
+      <CreatePodcastModal
+        isOpen={showCreatePodcast}
+        onClose={() => setShowCreatePodcast(false)}
       />
-      <CreateEpisodeModal 
-        isOpen={showCreateEpisode} 
-        onClose={() => setShowCreateEpisode(false)} 
+      
+      <EditPodcastModal
+        isOpen={showEditPodcast}
+        onClose={() => setShowEditPodcast(false)}
       />
-      <EditPodcastModal 
-        isOpen={showEditPodcast} 
-        onClose={() => setShowEditPodcast(false)} 
+      
+      <CreateEpisodeModal
+        isOpen={showCreateEpisode}
+        onClose={() => setShowCreateEpisode(false)}
       />
-      <EditEpisodeModal 
-        isOpen={showEditEpisode} 
-        onClose={() => setShowEditEpisode(false)} 
+      
+      <EditEpisodeModal
+        isOpen={showEditEpisode}
+        onClose={() => setShowEditEpisode(false)}
       />
     </>
   );
