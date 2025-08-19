@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
 import WorkArea from '../components/WorkArea';
@@ -11,7 +11,12 @@ import { PodcastSettingsProvider } from '../contexts/PodcastSettingsContext';
 import { PodcastProvider } from '../contexts/PodcastContext';
 
 const Index = () => {
+  console.log('Index component is rendering');
   const [isNavigationVisible, setIsNavigationVisible] = useState(false);
+
+  useEffect(() => {
+    console.log('Index component mounted successfully');
+  }, []);
 
   return (
     <PodcastSettingsProvider>
