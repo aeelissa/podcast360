@@ -1,4 +1,3 @@
-
 import { ChatMessage } from '../types/chat';
 
 export interface ChatSession {
@@ -19,6 +18,7 @@ class SessionManager {
   private sessions: Map<string, ChatSession> = new Map();
   private readonly MAX_MESSAGES_PER_SESSION = 50;
   private readonly STORAGE_KEY = 'podcast360_chat_sessions';
+  private currentSessionId: string = 'default_session';
 
   constructor() {
     this.loadSessions();
@@ -26,6 +26,14 @@ class SessionManager {
 
   private getSessionId(key: SessionKey): string {
     return `${key.documentId}_${key.sectionKey}`;
+  }
+
+  getCurrentSessionId(): string {
+    return this.currentSessionId;
+  }
+
+  setCurrentSessionId(sessionId: string): void {
+    this.currentSessionId = sessionId;
   }
 
   private loadSessions(): void {

@@ -4,12 +4,13 @@ import { Upload, FileText, Trash2, Book, MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ChatUploadedFile } from '../../types/file';
 import { fileStorage } from '../../utils/fileStorage';
-import { sessionManager } from '../../utils/sessionManager';
+import { usePodcast } from '../../contexts/PodcastContext';
 import FileUploadZone from './FileUploadZone';
 
 const KnowledgeBasePanel = () => {
   const [uploadedFiles, setUploadedFiles] = useState<ChatUploadedFile[]>([]);
-  const currentSessionId = sessionManager.getCurrentSessionId();
+  const { currentEpisode } = usePodcast();
+  const currentSessionId = currentEpisode?.id || 'default_session';
 
   useEffect(() => {
     loadFiles();
