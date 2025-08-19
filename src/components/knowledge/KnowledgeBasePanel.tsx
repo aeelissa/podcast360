@@ -16,7 +16,7 @@ const KnowledgeBasePanel: React.FC = () => {
   // Load files for current episode
   useEffect(() => {
     if (currentEpisode) {
-      const episodeFiles = fileStorage.getFilesBySession(currentEpisode.id);
+      const episodeFiles = fileStorage.getUploadedFiles().filter(file => file.sessionId === currentEpisode.id);
       setFiles(episodeFiles);
     } else {
       setFiles([]);
@@ -30,7 +30,7 @@ const KnowledgeBasePanel: React.FC = () => {
 
   const handleDeleteFile = (fileId: string) => {
     if (confirm('هل تريد حذف هذا الملف من قاعدة المعرفة؟')) {
-      fileStorage.deleteFile(fileId);
+      fileStorage.deleteUploadedFile(fileId);
       setFiles(prev => prev.filter(f => f.id !== fileId));
       console.log('File deleted from knowledge base:', fileId);
     }

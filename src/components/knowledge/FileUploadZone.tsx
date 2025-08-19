@@ -61,8 +61,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({ onFileUploaded, session
         sessionId
       };
 
-      // Save to storage
-      fileStorage.saveFile(uploadedFile);
+      // Save to storage using the correct method
+      fileStorage.saveUploadedFile(uploadedFile);
       onFileUploaded(uploadedFile);
       
       // Clear any previous errors

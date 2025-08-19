@@ -55,14 +55,12 @@ const NavigationPanel = () => {
         {expandedSections.has('podcasts') && (
           <div className="space-y-3 pr-6">
             <PodcastSelector
-              onCreateNew={() => setShowCreatePodcast(true)}
-              onEdit={() => setShowEditPodcast(true)}
+              onCreatePodcast={() => setShowCreatePodcast(true)}
             />
             
             {currentPodcast && (
               <EpisodeSelector
-                onCreateNew={() => setShowCreateEpisode(true)}
-                onEdit={() => setShowEditEpisode(true)}
+                onCreateEpisode={() => setShowCreateEpisode(true)}
               />
             )}
           </div>

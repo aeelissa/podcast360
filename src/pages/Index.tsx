@@ -66,10 +66,7 @@ const Index = () => {
               {/* Right Panel - Navigation (Collapsible) - Same width as AI Chat */}
               {isNavigationVisible && (
                 <div className="w-[25vw] flex-shrink-0 p-4 hidden lg:block">
-                  <NavigationPanel
-                    isVisible={isNavigationVisible}
-                    onClose={() => setIsNavigationVisible(false)}
-                  />
+                  <NavigationPanel />
                 </div>
               )}
 
@@ -77,10 +74,7 @@ const Index = () => {
               {isNavigationVisible && (
                 <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={() => setIsNavigationVisible(false)}>
                   <div className="absolute right-0 top-0 h-full w-[25vw] max-w-[85vw] p-4" onClick={(e) => e.stopPropagation()}>
-                    <NavigationPanel
-                      isVisible={isNavigationVisible}
-                      onClose={() => setIsNavigationVisible(false)}
-                    />
+                    <NavigationPanel />
                   </div>
                 </div>
               )}
