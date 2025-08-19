@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { PodcastSettings } from '../types/settings';
 import { settingsStorage } from '../utils/settingsStorage';
+import { useAdminConfig } from './AdminConfigContext';
 
 interface PodcastSettingsContextType {
   settings: PodcastSettings;
@@ -20,15 +21,19 @@ interface PodcastSettingsProviderProps {
 }
 
 export const PodcastSettingsProvider: React.FC<PodcastSettingsProviderProps> = ({ children }) => {
+  const { config: adminConfig, isLoading: adminLoading } = useAdminConfig();
   const [settings, setSettings] = useState<PodcastSettings>(settingsStorage.getSettings());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load settings on mount
-    const loadedSettings = settingsStorage.getSettings();
-    setSettings(loadedSettings);
-    setIsLoading(false);
-  }, []);
+    // Wait for admin config to load, then load settings with admin defaults
+    if (!adminLoading) {
+      console.log('Loading settings with admin defaults:', adminConfig.defaultPodcast);
+      const loadedSettings = settingsStorage.getSettings();
+      setSettings(loadedSettings);
+      setIsLoading(false);
+    }
+  }, [adminLoading, adminConfig.defaultPodcast]);
 
   const updateSettings = (newSettings: Partial<PodcastSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
@@ -64,6 +69,7 @@ export const PodcastSettingsProvider: React.FC<PodcastSettingsProviderProps> = (
   };
 
   const resetSettings = () => {
+    console.log('Resetting to admin defaults:', adminConfig.defaultPodcast);
     settingsStorage.resetSettings();
     const defaultSettings = settingsStorage.getSettings();
     setSettings(defaultSettings);

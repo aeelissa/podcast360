@@ -3,6 +3,7 @@ import { ChatMessage, ChatMode } from '../types/chat';
 import { aiService } from '../services/aiService';
 import { useDocumentContext } from '../contexts/DocumentContext';
 import { usePodcastSettings } from '../contexts/PodcastSettingsContext';
+import { useAdminConfig } from '../contexts/AdminConfigContext';
 import { sessionManager, SessionKey } from '../utils/sessionManager';
 import { getSystemPrompt, validateAIResponse } from '../utils/documentPrompts';
 
@@ -12,6 +13,7 @@ export const useAIChat = () => {
   const [chatMode, setChatMode] = useState<ChatMode>('document');
   const [currentSessionKey, setCurrentSessionKey] = useState<SessionKey | null>(null);
   const [autoSwitchEnabled, setAutoSwitchEnabled] = useState(true);
+  const [aiConfigured, setAiConfigured] = useState(aiService.isConfigured());
   
   const { 
     activeDocument, 
@@ -24,6 +26,24 @@ export const useAIChat = () => {
   } = useDocumentContext();
   
   const { settings } = usePodcastSettings();
+  const { config: adminConfig } = useAdminConfig();
+
+  // Listen for AI service configuration changes
+  useEffect(() => {
+    const handleConfigChange = () => {
+      console.log('AI Chat: Configuration changed, checking AI service status');
+      setAiConfigured(aiService.isConfigured());
+    };
+
+    window.addEventListener('admin-config-updated', handleConfigChange);
+    
+    // Check initial status
+    handleConfigChange();
+    
+    return () => {
+      window.removeEventListener('admin-config-updated', handleConfigChange);
+    };
+  }, []);
 
   // Auto-switch session when document or section changes
   useEffect(() => {
@@ -124,6 +144,20 @@ ${file.extractedText ? file.extractedText.substring(0, 500) + (file.extractedTex
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || !currentSessionKey) return;
 
+    // Check if AI is configured before attempting to send
+    if (!aiConfigured) {
+      const errorMessage: ChatMessage = {
+        id: `msg_${Date.now() + 1}`,
+        role: 'assistant',
+        content: 'لم يتم تكوين مفتاح API للذكاء الاصطناعي. يرجى الذهاب إلى إعدادات الإدارة وإضافة مفتاح Google Gemini API.',
+        timestamp: new Date().toISOString()
+      };
+      
+      sessionManager.addMessage(currentSessionKey, errorMessage);
+      setMessages(prev => [...prev, errorMessage]);
+      return;
+    }
+
     const userMessage: ChatMessage = {
       id: `msg_${Date.now()}`,
       role: 'user',
@@ -161,6 +195,7 @@ ${file.extractedText ? file.extractedText.substring(0, 500) + (file.extractedTex
         }))
       ];
 
+      console.log('AI Chat: Sending message to AI service');
       const response = await aiService.chat(aiMessages, {
         temperature: 0.7,
         maxTokens: 1500 // Increased for more detailed responses
@@ -181,7 +216,7 @@ ${file.extractedText ? file.extractedText.substring(0, 500) + (file.extractedTex
       const errorMessage: ChatMessage = {
         id: `msg_${Date.now() + 1}`,
         role: 'assistant',
-        content: 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
+        content: error instanceof Error ? error.message : 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
         timestamp: new Date().toISOString()
       };
       
@@ -192,7 +227,7 @@ ${file.extractedText ? file.extractedText.substring(0, 500) + (file.extractedTex
     } finally {
       setIsLoading(false);
     }
-  }, [currentSessionKey, buildEnhancedContext, getCurrentSectionKey]);
+  }, [currentSessionKey, buildEnhancedContext, getCurrentSectionKey, aiConfigured]);
 
   const applyToDocument = useCallback((content: string) => {
     insertContentAtCursor(content);
@@ -244,6 +279,6 @@ ${file.extractedText ? file.extractedText.substring(0, 500) + (file.extractedTex
     getAllSessions,
     autoSwitchEnabled,
     toggleAutoSwitch,
-    isAIConfigured: aiService.isConfigured()
+    isAIConfigured: aiConfigured
   };
 };
