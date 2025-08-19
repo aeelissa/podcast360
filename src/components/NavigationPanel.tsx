@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { Settings, FileText, X, Plus, Upload, File, Edit, Radio, Podcast } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
-import HierarchyBreadcrumb from './hierarchy/HierarchyBreadcrumb';
 import CreatePodcastModal from './modals/CreatePodcastModal';
 import CreateEpisodeModal from './modals/CreateEpisodeModal';
 import EditPodcastModal from './modals/EditPodcastModal';
 import EditEpisodeModal from './modals/EditEpisodeModal';
+import PodcastSelector from './hierarchy/PodcastSelector';
+import EpisodeSelector from './hierarchy/EpisodeSelector';
 
 interface NavigationPanelProps {
   isVisible: boolean;
@@ -57,86 +58,50 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <HierarchyBreadcrumb />
-                  
-                  {/* Current Podcast Management */}
-                  {currentPodcast ? (
-                    <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setShowEditPodcast(true)}
-                            className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors p-1"
-                            title="تحرير إعدادات البودكاست"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => setShowCreatePodcast(true)}
-                            className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors p-1"
-                            title="إنشاء بودكاست جديد"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-podcast-blue">{currentPodcast.name}</span>
-                          <Podcast className="w-3 h-3 text-podcast-blue" />
-                        </div>
+                  {/* Interactive Podcast Selector */}
+                  <div className="bg-podcast-blue/5 border border-podcast-blue/10 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <button
+                        onClick={() => setShowEditPodcast(true)}
+                        className="text-xs text-podcast-blue hover:text-podcast-blue/80 transition-colors p-1"
+                        title="تحرير إعدادات البودكاست"
+                        disabled={!currentPodcast}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                      <div className="flex-1">
+                        <PodcastSelector onCreatePodcast={() => setShowCreatePodcast(true)} />
                       </div>
+                    </div>
+                    {currentPodcast && (
                       <p className="text-xs text-podcast-gray text-right">
                         {currentPodcast.description || 'لا يوجد وصف'}
                       </p>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setShowCreatePodcast(true)}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-podcast-blue text-white hover:bg-podcast-blue/90 transition-colors text-right font-medium justify-center"
-                    >
-                      <Plus className="w-3 h-3" />
-                      إنشاء بودكاست جديد
-                    </button>
-                  )}
+                    )}
+                  </div>
 
-                  {/* Current Episode Management */}
+                  {/* Interactive Episode Selector */}
                   {currentPodcast && (
-                    currentEpisode ? (
-                      <div className="bg-podcast-gold/10 border border-podcast-gold/20 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setShowEditEpisode(true)}
-                              className="text-xs text-podcast-gold-dark hover:text-podcast-gold-dark/80 transition-colors p-1"
-                              title="تحرير إعدادات الحلقة"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </button>
-                            <button
-                              onClick={() => setShowCreateEpisode(true)}
-                              className="text-xs text-podcast-gold-dark hover:text-podcast-gold-dark/80 transition-colors p-1"
-                              title="إنشاء حلقة جديدة"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-podcast-gold-dark">{currentEpisode.title}</span>
-                            <Radio className="w-3 h-3 text-podcast-gold-dark" />
-                          </div>
+                    <div className="bg-podcast-gold/10 border border-podcast-gold/20 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <button
+                          onClick={() => setShowEditEpisode(true)}
+                          className="text-xs text-podcast-gold-dark hover:text-podcast-gold-dark/80 transition-colors p-1"
+                          title="تحرير إعدادات الحلقة"
+                          disabled={!currentEpisode}
+                        >
+                          <Edit className="w-3 h-3" />
+                        </button>
+                        <div className="flex-1">
+                          <EpisodeSelector onCreateEpisode={() => setShowCreateEpisode(true)} />
                         </div>
+                      </div>
+                      {currentEpisode && (
                         <p className="text-xs text-podcast-gray text-right">
                           {currentEpisode.description || 'لا يوجد وصف'}
                         </p>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setShowCreateEpisode(true)}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-podcast-gold text-white hover:bg-podcast-gold/90 transition-colors text-right font-medium justify-center"
-                      >
-                        <Plus className="w-3 h-3" />
-                        إنشاء حلقة جديدة
-                      </button>
-                    )
+                      )}
+                    </div>
                   )}
                 </div>
               )}
@@ -174,17 +139,6 @@ const NavigationPanel: React.FC<NavigationPanelProps> = ({ isVisible, onClose })
                 )}
               </div>
             )}
-
-            {/* Navigation Section - Only Projects */}
-            <div className="p-4 border-b border-podcast-border">
-              <h3 className="font-bold text-podcast-gray mb-3 text-sm text-right">التنقل</h3>
-              <div className="space-y-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm bg-podcast-blue text-white transition-all text-right font-medium">
-                  <span className="mr-auto">المشاريع</span>
-                  <FileText className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
 
             {/* Project Info */}
             <div className="p-4">

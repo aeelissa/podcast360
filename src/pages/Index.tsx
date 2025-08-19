@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import AIChatPanel from '../components/AIChatPanel';
 import WorkArea from '../components/WorkArea';
@@ -11,12 +11,7 @@ import { PodcastSettingsProvider } from '../contexts/PodcastSettingsContext';
 import { PodcastProvider } from '../contexts/PodcastContext';
 
 const Index = () => {
-  console.log('Index component is rendering');
   const [isNavigationVisible, setIsNavigationVisible] = useState(false);
-
-  useEffect(() => {
-    console.log('Index component mounted successfully');
-  }, []);
 
   return (
     <PodcastSettingsProvider>
@@ -68,9 +63,9 @@ const Index = () => {
                 <WorkArea />
               </div>
 
-              {/* Right Panel - Navigation (Collapsible) */}
+              {/* Right Panel - Navigation (Collapsible) - Same width as AI Chat */}
               {isNavigationVisible && (
-                <div className="w-80 flex-shrink-0 p-4 hidden lg:block">
+                <div className="w-[25vw] flex-shrink-0 p-4 hidden lg:block">
                   <NavigationPanel
                     isVisible={isNavigationVisible}
                     onClose={() => setIsNavigationVisible(false)}
@@ -81,7 +76,7 @@ const Index = () => {
               {/* Mobile Navigation Overlay */}
               {isNavigationVisible && (
                 <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={() => setIsNavigationVisible(false)}>
-                  <div className="absolute right-0 top-0 h-full w-80 max-w-[85vw] p-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="absolute right-0 top-0 h-full w-[25vw] max-w-[85vw] p-4" onClick={(e) => e.stopPropagation()}>
                     <NavigationPanel
                       isVisible={isNavigationVisible}
                       onClose={() => setIsNavigationVisible(false)}
