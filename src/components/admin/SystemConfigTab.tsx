@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { System, Save, RotateCcw, Download, Upload } from 'lucide-react';
+import { Settings, Save, RotateCcw, Download, Upload } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
@@ -30,7 +29,7 @@ const SystemConfigTab = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <System className="w-6 h-6 text-podcast-gold" />
+          <Settings className="w-6 h-6 text-podcast-gold" />
           <div>
             <h3 className="text-lg font-semibold text-right">إعدادات النظام</h3>
             <p className="text-sm text-podcast-gray text-right">
