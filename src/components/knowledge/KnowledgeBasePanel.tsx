@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Book, Upload, Trash2, FileText, AlertCircle } from 'lucide-react';
 import { ChatUploadedFile } from '../../types/file';
@@ -16,7 +15,7 @@ const KnowledgeBasePanel: React.FC = () => {
   // Load files for current episode
   useEffect(() => {
     if (currentEpisode) {
-      const episodeFiles = fileStorage.getUploadedFiles().filter(file => file.sessionId === currentEpisode.id);
+      const episodeFiles = fileStorage.getChatFiles(currentEpisode.id);
       setFiles(episodeFiles);
     } else {
       setFiles([]);
@@ -30,7 +29,7 @@ const KnowledgeBasePanel: React.FC = () => {
 
   const handleDeleteFile = (fileId: string) => {
     if (confirm('هل تريد حذف هذا الملف من قاعدة المعرفة؟')) {
-      fileStorage.deleteUploadedFile(fileId);
+      fileStorage.deleteChatFile(fileId);
       setFiles(prev => prev.filter(f => f.id !== fileId));
       console.log('File deleted from knowledge base:', fileId);
     }

@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { Upload, File, X, AlertCircle } from 'lucide-react';
 import { ChatUploadedFile, FILE_UPLOAD_CONFIG } from '../../types/file';
@@ -62,7 +61,7 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({ onFileUploaded, session
       };
 
       // Save to storage using the correct method
-      fileStorage.saveUploadedFile(uploadedFile);
+      fileStorage.saveChatFile(uploadedFile);
       onFileUploaded(uploadedFile);
       
       // Clear any previous errors
