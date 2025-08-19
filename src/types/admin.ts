@@ -1,3 +1,4 @@
+
 export interface APIKeysConfig {
   googleGemini: string;
   openai?: string;
@@ -18,7 +19,6 @@ export interface DefaultPodcastConfig {
     audience: string;
     brandVoice: string;
     showName: string;
-    hostName?: string;
   };
   episode: {
     goals: string[];
@@ -103,8 +103,7 @@ export const DEFAULT_ADMIN_CONFIG: AdminConfiguration = {
       style: ['تفاعلي', 'تعليمي'],
       audience: 'المهتمين بالتكنولوجيا والإعلام الرقمي',
       brandVoice: 'عربية فصحى معاصرة',
-      showName: 'بودكاست جديد',
-      hostName: ''
+      showName: 'بودكاست جديد'
     },
     episode: {
       goals: [

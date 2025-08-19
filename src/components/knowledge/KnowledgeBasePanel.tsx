@@ -1,116 +1,155 @@
-
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Trash2, Book, MessageSquare } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Book, Upload, Trash2, FileText, AlertCircle } from 'lucide-react';
 import { ChatUploadedFile } from '../../types/file';
 import { fileStorage } from '../../utils/fileStorage';
 import { usePodcast } from '../../contexts/PodcastContext';
 import FileUploadZone from './FileUploadZone';
 
-const KnowledgeBasePanel = () => {
-  const [uploadedFiles, setUploadedFiles] = useState<ChatUploadedFile[]>([]);
+const KnowledgeBasePanel: React.FC = () => {
+  const [files, setFiles] = useState<ChatUploadedFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showUploadZone, setShowUploadZone] = useState(false);
+  
   const { currentEpisode } = usePodcast();
-  const currentSessionId = currentEpisode?.id || 'default_session';
 
+  // Load files for current episode
   useEffect(() => {
-    loadFiles();
-  }, [currentSessionId]);
-
-  const loadFiles = () => {
-    const files = fileStorage.getChatFiles(currentSessionId);
-    setUploadedFiles(files);
-  };
+    if (currentEpisode) {
+      const episodeFiles = fileStorage.getChatFiles(currentEpisode.id);
+      setFiles(episodeFiles);
+    } else {
+      setFiles([]);
+    }
+  }, [currentEpisode]);
 
   const handleFileUploaded = (file: ChatUploadedFile) => {
-    setUploadedFiles(prev => [...prev, file]);
+    setFiles(prev => [...prev, file]);
+    console.log('File uploaded to knowledge base:', file.name);
   };
 
   const handleDeleteFile = (fileId: string) => {
-    fileStorage.deleteChatFile(fileId);
-    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+    if (confirm('هل تريد حذف هذا الملف من قاعدة المعرفة؟')) {
+      fileStorage.deleteChatFile(fileId);
+      setFiles(prev => prev.filter(f => f.id !== fileId));
+      console.log('File deleted from knowledge base:', fileId);
+    }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  return (
-    <div className="h-full flex flex-col p-4 space-y-4">
-      {/* Header */}
-      <div className="text-rtl">
-        <div className="flex items-center gap-2 mb-2">
-          <MessageSquare className="w-5 h-5 text-podcast-blue" />
-          <h3 className="font-bold text-podcast-blue text-right">مستندات المحادثة</h3>
+  const getFileTypeIcon = (type: string) => {
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('word') || type.includes('document')) return '📝';
+    return '📁';
+  };
+
+  if (!currentEpisode) {
+    return (
+      <div className="podcast-panel h-full flex flex-col">
+        <div className="podcast-header px-4 py-3 rounded-t-xl">
+          <div className="flex items-center gap-2">
+            <Book className="w-5 h-5" />
+            <h2 className="font-bold text-right">قاعدة المعرفة</h2>
+          </div>
         </div>
-        <p className="text-sm text-podcast-gray text-right mb-4">
-          ارفع مستندات للاستخدام في هذه المحادثة فقط (مستوى الحلقة)
-        </p>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center text-podcast-gray">
+            <AlertCircle className="w-8 h-8 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">اختر حلقة لإدارة ملفات قاعدة المعرفة</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="podcast-panel h-full flex flex-col">
+      {/* Header */}
+      <div className="podcast-header px-4 py-3 rounded-t-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Book className="w-5 h-5" />
+            <h2 className="font-bold text-right">قاعدة المعرفة</h2>
+          </div>
+          <button
+            onClick={() => setShowUploadZone(!showUploadZone)}
+            className="podcast-button-sm"
+            title="رفع ملفات"
+          >
+            <Upload className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Upload Zone */}
-      <FileUploadZone
-        onFileUploaded={handleFileUploaded}
-        sessionId={currentSessionId}
-      />
+      {/* Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto p-4 space-y-4">
+          
+          {/* Upload Zone */}
+          {showUploadZone && (
+            <div className="border border-podcast-border rounded-lg p-4">
+              <FileUploadZone
+                onFileUploaded={handleFileUploaded}
+                sessionId={currentEpisode.id}
+              />
+            </div>
+          )}
 
-      {/* Uploaded Files List */}
-      <div className="flex-1 overflow-y-auto">
-        {uploadedFiles.length === 0 ? (
-          <div className="text-center py-8 text-rtl">
-            <FileText className="w-12 h-12 mx-auto text-podcast-gray/50 mb-3" />
-            <p className="text-podcast-gray text-right">لم يتم رفع أي مستندات بعد</p>
-            <p className="text-sm text-podcast-gray/70 text-right">
-              ارفع مستندات لتحسين إجابات الذكاء الاصطناعي
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm text-right text-podcast-blue">
-              الملفات المرفوعة ({uploadedFiles.length})
-            </h4>
-            {uploadedFiles.map((file) => (
-              <div
-                key={file.id}
-                className="flex items-start gap-3 p-3 border border-podcast-border rounded-lg hover:bg-podcast-gold/5 transition-colors"
-              >
-                <FileText className="w-4 h-4 text-podcast-blue mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0 text-rtl">
-                  <p className="font-medium text-sm text-right truncate">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-podcast-gray text-right">
-                    {formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleDateString('ar')}
-                  </p>
-                  {file.extractedText && (
-                    <p className="text-xs text-podcast-gray/70 text-right mt-1 line-clamp-2">
-                      {file.extractedText.substring(0, 100)}...
-                    </p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteFile(file.id)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+          {/* Files List */}
+          {files.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="w-8 h-8 mx-auto mb-3 text-podcast-gray opacity-50" />
+              <p className="text-sm text-podcast-gray">
+                لا توجد ملفات في قاعدة المعرفة
+              </p>
+              <p className="text-xs text-podcast-gray/70 mt-1">
+                ارفع ملفات لتحسين إجابات الذكاء الاصطناعي
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-podcast-gray text-right">
+                الملفات المرفوعة ({files.length})
+              </h3>
+              
+              {files.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between p-3 border border-podcast-border rounded-lg hover:bg-gray-50"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Info Note */}
-      <div className="text-xs text-podcast-gray/70 text-right text-rtl border-t pt-3">
-        <p className="flex items-center gap-1 justify-end">
-          <Book className="w-3 h-3" />
-          هذه المستندات متاحة فقط في هذه المحادثة
-        </p>
+                  <div className="flex items-center gap-3 flex-1">
+                    <span className="text-lg">{getFileTypeIcon(file.type)}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-right">
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-podcast-gray text-right">
+                        {formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleDateString('ar')}
+                      </p>
+                      {file.extractedText && (
+                        <p className="text-xs text-green-600 text-right mt-1">
+                          تم استخراج النص ({file.extractedText.length} حرف)
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => handleDeleteFile(file.id)}
+                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                    title="حذف الملف"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

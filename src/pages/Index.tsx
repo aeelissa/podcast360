@@ -9,18 +9,20 @@ const Index = () => {
   return (
     <PodcastProvider>
       <DocumentProvider>
-        <div className="min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 w-full">
-          <div className="flex h-screen w-full">
-            {/* Navigation Panel - Left side, now with minimize functionality */}
-            <NavigationPanel />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+          <div className="grid grid-cols-12 gap-4 p-4 h-screen">
+            {/* Navigation Panel */}
+            <div className="col-span-3">
+              <NavigationPanel />
+            </div>
             
-            {/* Work Area - Center, flex-1 */}
-            <div className="flex-1 p-4">
+            {/* Work Area */}
+            <div className="col-span-6">
               <WorkArea />
             </div>
             
-            {/* AI Chat Panel - Right side, fixed width */}
-            <div className="w-80 p-4 border-l border-podcast-border">
+            {/* AI Chat Panel */}
+            <div className="col-span-3">
               <AIChatPanel />
             </div>
           </div>

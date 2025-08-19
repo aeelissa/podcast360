@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Settings, Podcast, Upload } from 'lucide-react';
+import { X, Settings, Podcast } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -8,11 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { usePodcast } from '../../contexts/PodcastContext';
-import { useAdminConfig } from '../../contexts/AdminConfigContext';
 import { TONE_OPTIONS, STYLE_OPTIONS, BRAND_VOICE_OPTIONS } from '../../types/settings';
-import { KnowledgeFile } from '../../types/podcast';
-import { fileStorage } from '../../utils/fileStorage';
-import FileUploadZone from '../knowledge/FileUploadZone';
 
 interface CreatePodcastModalProps {
   isOpen: boolean;
@@ -27,22 +23,8 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
   const [audience, setAudience] = useState('');
   const [brandVoice, setBrandVoice] = useState('');
   const [hostName, setHostName] = useState('');
-  const [uploadedFiles, setUploadedFiles] = useState<KnowledgeFile[]>([]);
   const [isCreating, setIsCreating] = useState(false);
-  
   const { createPodcast } = usePodcast();
-  const { config } = useAdminConfig();
-
-  // Initialize with admin default settings
-  React.useEffect(() => {
-    if (config.defaultPodcast && isOpen) {
-      setTone(config.defaultPodcast.identity.tone);
-      setStyle(config.defaultPodcast.identity.style);
-      setAudience(config.defaultPodcast.identity.audience);
-      setBrandVoice(config.defaultPodcast.identity.brandVoice);
-      setHostName(config.defaultPodcast.identity.hostName || '');
-    }
-  }, [config.defaultPodcast, isOpen]);
 
   const handleStyleToggle = (styleOption: string) => {
     setStyle(prev => 
@@ -50,34 +32,6 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
         ? prev.filter(s => s !== styleOption)
         : [...prev, styleOption]
     );
-  };
-
-  const handleFileUpload = async (file: File) => {
-    try {
-      const tempPodcastId = `temp_${Date.now()}`;
-      const result = await fileStorage.processFile(file, tempPodcastId);
-      
-      if (result.success && result.extractedText) {
-        const knowledgeFile: KnowledgeFile = {
-          id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          name: file.name,
-          type: file.type as 'pdf' | 'doc' | 'docx',
-          size: file.size,
-          content: await fileStorage.fileToBase64(file),
-          extractedText: result.extractedText,
-          uploadedAt: new Date().toISOString(),
-          podcastId: tempPodcastId
-        };
-        
-        setUploadedFiles(prev => [...prev, knowledgeFile]);
-      }
-    } catch (error) {
-      console.error('File upload error:', error);
-    }
-  };
-
-  const removeFile = (fileId: string) => {
-    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
   };
 
   const handleCreate = async () => {
@@ -89,12 +43,12 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
       // Create podcast with integrated brain settings
       const podcastSettings = {
         identity: {
-          tone: tone || config.defaultPodcast.identity.tone,
-          style: style.length > 0 ? style : config.defaultPodcast.identity.style,
-          audience: audience || config.defaultPodcast.identity.audience,
-          brandVoice: brandVoice || config.defaultPodcast.identity.brandVoice,
-          hostName: hostName || config.defaultPodcast.identity.hostName,
-          showName: name
+          tone: tone || 'ودودة ومهنية',
+          style: style.length > 0 ? style : ['تفاعلي'],
+          audience: audience || 'الجمهور العام',
+          brandVoice: brandVoice || 'عربية فصحى معاصرة',
+          hostName: hostName || '',
+          showName: name // Add showName to settings
         },
         advanced: {
           autoSave: true,
@@ -103,14 +57,7 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
         }
       };
 
-      const podcast = await createPodcast(name.trim(), description.trim(), podcastSettings);
-      
-      // Save uploaded files to the created podcast
-      for (const file of uploadedFiles) {
-        const updatedFile = { ...file, podcastId: podcast.id };
-        fileStorage.saveKnowledgeFile(updatedFile);
-      }
-
+      await createPodcast(name.trim(), description.trim(), podcastSettings);
       handleClose();
     } catch (error) {
       console.error('Error creating podcast:', error);
@@ -127,13 +74,12 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
     setAudience('');
     setBrandVoice('');
     setHostName('');
-    setUploadedFiles([]);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" dir="rtl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden" dir="rtl">
         <DialogHeader className="text-right">
           <DialogTitle className="text-xl font-bold text-podcast-blue flex items-center gap-2">
             <Podcast className="w-5 h-5" />
@@ -173,55 +119,6 @@ const CreatePodcastModal: React.FC<CreatePodcastModalProps> = ({ isOpen, onClose
                 placeholder="وصف مختصر عن البودكاست وأهدافه"
               />
             </div>
-          </div>
-
-          {/* Knowledge Base Documents */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="font-bold text-podcast-blue text-right flex items-center gap-2">
-              <Upload className="w-4 h-4" />
-              مستندات قاعدة المعرفة (مستوى البودكاست)
-            </h3>
-            <p className="text-sm text-podcast-gray text-right">
-              ارفع المستندات التي ستكون متاحة لجميع حلقات هذا البودكاست
-            </p>
-            
-            <FileUploadZone
-              onFileUploaded={(chatFile) => {
-                // Convert ChatUploadedFile to KnowledgeFile
-                const knowledgeFile: KnowledgeFile = {
-                  id: chatFile.id,
-                  name: chatFile.name,
-                  type: chatFile.type as 'pdf' | 'doc' | 'docx',
-                  size: chatFile.size,
-                  content: chatFile.content,
-                  extractedText: chatFile.extractedText,
-                  uploadedAt: chatFile.uploadedAt,
-                  podcastId: 'temp'
-                };
-                setUploadedFiles(prev => [...prev, knowledgeFile]);
-              }}
-              sessionId="podcast-creation"
-            />
-            
-            {/* Uploaded Files List */}
-            {uploadedFiles.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-right">الملفات المرفوعة:</h4>
-                {uploadedFiles.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(file.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                    <span className="text-sm">{file.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Podcast Brain Settings */}

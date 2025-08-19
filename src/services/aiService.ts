@@ -16,7 +16,6 @@ class AIService {
   private apiKey: string;
   private genAI: GoogleGenerativeAI | null = null;
   private configWatcher: (() => void) | null = null;
-  private adminConfig: any = null;
 
   constructor() {
     // Load API key from admin configuration
@@ -42,8 +41,8 @@ class AIService {
     try {
       const adminConfig = localStorage.getItem('podcast360_admin_config');
       if (adminConfig) {
-        this.adminConfig = JSON.parse(adminConfig);
-        this.apiKey = this.adminConfig.apiKeys?.googleGemini || '';
+        const config = JSON.parse(adminConfig);
+        this.apiKey = config.apiKeys?.googleGemini || '';
         console.log('AI Service: API key loaded from admin config:', this.apiKey ? '[CONFIGURED]' : '[MISSING]');
       } else {
         // Fallback to old storage method
@@ -65,18 +64,6 @@ class AIService {
     }
   }
 
-  private getSystemPrompt(): string {
-    // Use admin-configured system prompt if available
-    if (this.adminConfig?.aiPrompts?.systemPrompt) {
-      return this.adminConfig.aiPrompts.systemPrompt;
-    }
-    
-    // Default system prompt
-    return `أنت مساعد ذكي متخصص في إنتاج محتوى البودكاست باللغة العربية. 
-    تتميز بالدقة والإبداع في تقديم المحتوى المفيد والجذاب.
-    استخدم اللغة العربية الفصحى المعاصرة وكن مفيدًا ومهذبًا.`;
-  }
-
   async chat(
     messages: AIMessage[],
     config: AIServiceConfig = {}
@@ -86,31 +73,26 @@ class AIService {
       throw new Error('لم يتم تكوين مفتاح API. يرجى إضافة مفتاح Google Gemini API في إعدادات الإدارة.');
     }
 
-    // Use admin-configured model settings
-    const modelConfig = this.adminConfig?.system?.aiModel || 'gemini-1.5-flash';
-    const temperature = config.temperature || this.adminConfig?.system?.temperature || 0.7;
-    const maxTokens = config.maxTokens || this.adminConfig?.system?.maxTokens || 1000;
+    const { model = 'gemini-1.5-flash', temperature = 0.7 } = config;
 
     try {
       console.log('AI Service: Sending chat request with', messages.length, 'messages');
-      console.log('AI Service: Using model:', modelConfig, 'temperature:', temperature);
       
       const genModel = this.genAI.getGenerativeModel({ 
-        model: modelConfig,
+        model,
         generationConfig: {
           temperature,
-          maxOutputTokens: maxTokens,
+          maxOutputTokens: config.maxTokens || 1000,
         }
       });
 
-      // Inject system prompt from admin config
-      const systemPrompt = this.getSystemPrompt();
+      // Convert messages to Gemini format
       const systemMessage = messages.find(m => m.role === 'system');
       const conversationMessages = messages.filter(m => m.role !== 'system');
       
-      let prompt = systemPrompt + '\n\n';
+      let prompt = '';
       if (systemMessage) {
-        prompt += systemMessage.content + '\n\n';
+        prompt = systemMessage.content + '\n\n';
       }
       
       // Add conversation history
