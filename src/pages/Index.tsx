@@ -9,7 +9,7 @@ const Index = () => {
   return (
     <PodcastProvider>
       <DocumentProvider>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50" dir="rtl">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
           <div className="grid grid-cols-12 gap-4 p-4 h-screen">
             {/* Navigation Panel */}
             <div className="col-span-3">

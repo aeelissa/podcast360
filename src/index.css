@@ -57,23 +57,35 @@
     @apply border-border;
   }
   
-  html {
-    direction: rtl;
-  }
-  
   body {
     @apply bg-background text-foreground font-medium;
     font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Remove global RTL - use selective approach instead */
   }
   
-  /* RTL-specific adjustments */
-  [dir="rtl"] {
+  /* Selective RTL classes for Arabic content */
+  .text-rtl {
+    direction: rtl;
     text-align: right;
   }
   
-  /* Custom scrollbar for RTL */
+  .content-rtl {
+    direction: rtl;
+  }
+  
+  .form-rtl {
+    direction: rtl;
+  }
+  
+  .form-rtl input,
+  .form-rtl textarea,
+  .form-rtl select {
+    text-align: right;
+  }
+  
+  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
   }
@@ -98,7 +110,7 @@
   }
   
   .podcast-header {
-    @apply bg-gradient-to-l from-podcast-blue to-podcast-blue-light text-white;
+    @apply bg-gradient-to-r from-podcast-blue to-podcast-blue-light text-white;
   }
   
   .podcast-tab {
@@ -139,5 +151,19 @@
   
   .podcast-source-view {
     @apply bg-gray-50 border rounded-lg p-4 font-mono text-sm overflow-auto;
+  }
+  
+  /* Arabic text specific styles */
+  .arabic-text {
+    @apply text-rtl;
+    font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+  }
+  
+  .arabic-content {
+    @apply content-rtl;
+  }
+  
+  .arabic-form {
+    @apply form-rtl;
   }
 }

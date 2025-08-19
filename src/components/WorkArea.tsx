@@ -99,7 +99,7 @@ const WorkArea = () => {
               <button
                 key={tab.id}
                 disabled
-                className="flex items-center gap-2 px-6 py-4 border-b-2 border-transparent text-podcast-gray/50 cursor-not-allowed whitespace-nowrap font-medium"
+                className="flex items-center gap-2 px-6 py-4 border-b-2 border-transparent text-podcast-gray/50 cursor-not-allowed whitespace-nowrap font-medium arabic-text"
               >
                 {tab.icon}
                 <span>{tab.title}</span>
@@ -110,7 +110,7 @@ const WorkArea = () => {
 
         {/* Empty State */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-8">
+          <div className="text-center p-8 arabic-content">
             <FileText className="w-16 h-16 text-podcast-gray/30 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-podcast-gray mb-2">
               اختر حلقة للبدء
@@ -136,7 +136,7 @@ const WorkArea = () => {
             <button
               key={tab.id}
               onClick={() => handleTabSwitch(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all whitespace-nowrap font-medium ${
+              className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all whitespace-nowrap font-medium arabic-text ${
                 activeTab === tab.id
                   ? 'border-podcast-blue text-podcast-blue bg-podcast-blue/5 font-bold'
                   : 'border-transparent text-podcast-gray hover:text-podcast-blue hover:bg-podcast-blue/5'
@@ -150,7 +150,7 @@ const WorkArea = () => {
       </div>
 
       {/* Document Title */}
-      <div className="p-4 border-b border-podcast-border">
+      <div className="p-4 border-b border-podcast-border arabic-content">
         <div className="text-right">
           {currentTab && (
             <>
@@ -176,7 +176,7 @@ const WorkArea = () => {
             saveStatus={saveStatus}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-podcast-gray">
+          <div className="flex items-center justify-center h-full text-podcast-gray arabic-text">
             <p>جاري تحميل المستند...</p>
           </div>
         )}

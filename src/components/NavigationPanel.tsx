@@ -35,12 +35,12 @@ const NavigationPanel = () => {
   };
 
   const renderNavigationContent = () => (
-    <>
+    <div className="arabic-content">
       {/* Podcast Management Section */}
       <div className="space-y-3">
         <button
           onClick={() => toggleSection('podcasts')}
-          className="w-full flex items-center justify-between p-3 text-right hover:bg-podcast-gold/10 rounded-lg transition-colors"
+          className="w-full flex items-center justify-between p-3 text-right hover:bg-podcast-gold/10 rounded-lg transition-colors arabic-text"
         >
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -69,7 +69,7 @@ const NavigationPanel = () => {
 
       {/* Current Context Display */}
       {(currentPodcast || currentEpisode) && (
-        <div className="border border-podcast-border rounded-lg p-3 bg-podcast-gold/5">
+        <div className="border border-podcast-border rounded-lg p-3 bg-podcast-gold/5 arabic-content">
           <h4 className="font-medium text-sm mb-2 text-right">السياق الحالي</h4>
           {currentPodcast && (
             <p className="text-xs text-podcast-gray text-right mb-1">
@@ -83,7 +83,7 @@ const NavigationPanel = () => {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 
   return (
@@ -91,7 +91,7 @@ const NavigationPanel = () => {
       <div className="podcast-panel h-full flex flex-col">
         {/* Enhanced Header with View Switcher */}
         <div className="podcast-header px-4 py-3 rounded-t-xl">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 arabic-content">
             <h2 className="font-bold text-right">لوحة التنقل</h2>
           </div>
           
@@ -99,7 +99,7 @@ const NavigationPanel = () => {
           <div className="flex gap-1 bg-white/20 rounded-lg p-1">
             <button
               onClick={() => setActiveView('navigation')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
                 activeView === 'navigation'
                   ? 'bg-white text-podcast-gold-dark shadow-sm'
                   : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -110,7 +110,7 @@ const NavigationPanel = () => {
             </button>
             <button
               onClick={() => setActiveView('knowledge')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
                 activeView === 'knowledge'
                   ? 'bg-white text-podcast-gold-dark shadow-sm'
                   : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -121,7 +121,7 @@ const NavigationPanel = () => {
             </button>
             <button
               onClick={() => setActiveView('settings')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
                 activeView === 'settings'
                   ? 'bg-white text-podcast-gold-dark shadow-sm'
                   : 'text-white/80 hover:text-white hover:bg-white/10'
