@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Settings, Users, Book, Key, ChevronDown, ChevronRight } from 'lucide-react';
+import { Users, Book, ChevronDown, ChevronRight } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
 import PodcastSelector from './hierarchy/PodcastSelector';
 import EpisodeSelector from './hierarchy/EpisodeSelector';
@@ -9,11 +9,18 @@ import EditPodcastModal from './modals/EditPodcastModal';
 import CreateEpisodeModal from './modals/CreateEpisodeModal';
 import EditEpisodeModal from './modals/EditEpisodeModal';
 import KnowledgeBasePanel from './knowledge/KnowledgeBasePanel';
-import APIKeyManager from './settings/APIKeyManager';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarTrigger,
+  useSidebar,
+} from './ui/sidebar';
 
 const NavigationPanel = () => {
   const { currentPodcast, currentEpisode } = usePodcast();
-  const [activeView, setActiveView] = useState<'navigation' | 'knowledge' | 'settings'>('navigation');
+  const { state } = useSidebar();
+  const [activeView, setActiveView] = useState<'navigation' | 'knowledge'>('navigation');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['podcasts']));
   
   // Modal states
@@ -35,7 +42,7 @@ const NavigationPanel = () => {
   };
 
   const renderNavigationContent = () => (
-    <div className="arabic-content">
+    <div className="text-rtl">
       {/* Podcast Management Section */}
       <div className="space-y-3">
         <button
@@ -44,15 +51,16 @@ const NavigationPanel = () => {
         >
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
-            <span className="font-medium">إدارة البودكاست</span>
+            {state === 'expanded' && <span className="font-medium">إدارة البودكاست</span>}
           </div>
-          {expandedSections.has('podcasts') ? 
-            <ChevronDown className="w-4 h-4" /> : 
-            <ChevronRight className="w-4 h-4" />
-          }
+          {state === 'expanded' && (
+            expandedSections.has('podcasts') ? 
+              <ChevronDown className="w-4 h-4" /> : 
+              <ChevronRight className="w-4 h-4" />
+          )}
         </button>
 
-        {expandedSections.has('podcasts') && (
+        {expandedSections.has('podcasts') && state === 'expanded' && (
           <div className="space-y-3 pr-6">
             <PodcastSelector
               onCreatePodcast={() => setShowCreatePodcast(true)}
@@ -68,8 +76,8 @@ const NavigationPanel = () => {
       </div>
 
       {/* Current Context Display */}
-      {(currentPodcast || currentEpisode) && (
-        <div className="border border-podcast-border rounded-lg p-3 bg-podcast-gold/5 arabic-content">
+      {(currentPodcast || currentEpisode) && state === 'expanded' && (
+        <div className="border border-podcast-border rounded-lg p-3 bg-podcast-gold/5 text-rtl">
           <h4 className="font-medium text-sm mb-2 text-right">السياق الحالي</h4>
           {currentPodcast && (
             <p className="text-xs text-podcast-gray text-right mb-1">
@@ -88,53 +96,45 @@ const NavigationPanel = () => {
 
   return (
     <>
-      <div className="podcast-panel h-full flex flex-col">
+      <Sidebar className="border-l-0 border-r border-podcast-border">
         {/* Enhanced Header with View Switcher */}
-        <div className="podcast-header px-4 py-3 rounded-t-xl">
-          <div className="flex items-center justify-between mb-3 arabic-content">
-            <h2 className="font-bold text-right">لوحة التنقل</h2>
+        <SidebarHeader className="podcast-header px-4 py-3">
+          <div className="flex items-center justify-between mb-3 text-rtl">
+            <SidebarTrigger className="mr-2" />
+            {state === 'expanded' && <h2 className="font-bold text-right">لوحة التنقل</h2>}
           </div>
           
-          {/* View Switcher */}
-          <div className="flex gap-1 bg-white/20 rounded-lg p-1">
-            <button
-              onClick={() => setActiveView('navigation')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
-                activeView === 'navigation'
-                  ? 'bg-white text-podcast-gold-dark shadow-sm'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              التنقل
-            </button>
-            <button
-              onClick={() => setActiveView('knowledge')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
-                activeView === 'knowledge'
-                  ? 'bg-white text-podcast-gold-dark shadow-sm'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Book className="w-4 h-4" />
-              المعرفة
-            </button>
-            <button
-              onClick={() => setActiveView('settings')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
-                activeView === 'settings'
-                  ? 'bg-white text-podcast-gold-dark shadow-sm'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Key className="w-4 h-4" />
-              الإعدادات
-            </button>
-          </div>
-        </div>
+          {/* View Switcher - only show when expanded */}
+          {state === 'expanded' && (
+            <div className="flex gap-1 bg-white/20 rounded-lg p-1">
+              <button
+                onClick={() => setActiveView('navigation')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
+                  activeView === 'navigation'
+                    ? 'bg-white text-podcast-gold-dark shadow-sm'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                التنقل
+              </button>
+              <button
+                onClick={() => setActiveView('knowledge')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-xs transition-colors arabic-text ${
+                  activeView === 'knowledge'
+                    ? 'bg-white text-podcast-gold-dark shadow-sm'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Book className="w-4 h-4" />
+                المعرفة
+              </button>
+            </div>
+          )}
+        </SidebarHeader>
 
         {/* Dynamic Content Based on Active View */}
-        <div className="flex-1 overflow-hidden">
+        <SidebarContent className="overflow-hidden">
           {activeView === 'navigation' && (
             <div className="h-full overflow-y-auto p-4 space-y-4">
               {renderNavigationContent()}
@@ -142,14 +142,8 @@ const NavigationPanel = () => {
           )}
           
           {activeView === 'knowledge' && <KnowledgeBasePanel />}
-          
-          {activeView === 'settings' && (
-            <div className="h-full overflow-y-auto p-4">
-              <APIKeyManager />
-            </div>
-          )}
-        </div>
-      </div>
+        </SidebarContent>
+      </Sidebar>
 
       {/* Modals */}
       <CreatePodcastModal
