@@ -24,12 +24,10 @@ const WorkArea = () => {
     updateDocumentContent
   } = useDocumentManager();
 
-  // Import document context
   const { setActiveDocument: setContextDocument } = useDocumentContext();
-  
-  // Get current episode context
   const { currentEpisode, currentPodcast } = usePodcast();
 
+  // Fixed tab order - ورقة التصور first (rightmost in RTL)
   const tabs: TabData[] = [
     {
       id: 'concept',
@@ -58,7 +56,7 @@ const WorkArea = () => {
     setActiveTab(tabId);
     const document = getOrCreateDocument(tabId);
     setActiveDocument(document);
-    setContextDocument(document); // Update context
+    setContextDocument(document);
   }, [getOrCreateDocument, setActiveDocument, setContextDocument, currentEpisode]);
 
   // Handle content changes
@@ -66,7 +64,7 @@ const WorkArea = () => {
     if (activeDocument) {
       const updatedDocument = { ...activeDocument, content };
       updateDocumentContent(activeDocument.id, content);
-      setContextDocument(updatedDocument); // Update context
+      setContextDocument(updatedDocument);
     }
   }, [activeDocument, updateDocumentContent, setContextDocument]);
 
@@ -75,9 +73,8 @@ const WorkArea = () => {
     if (currentEpisode) {
       const document = getOrCreateDocument(activeTab);
       setActiveDocument(document);
-      setContextDocument(document); // Update context
+      setContextDocument(document);
     } else {
-      // Clear active document when no episode is selected
       setActiveDocument(null);
       setContextDocument(null);
     }
@@ -94,7 +91,7 @@ const WorkArea = () => {
       <div className="podcast-panel h-full flex flex-col">
         {/* Tab Navigation - Disabled */}
         <div className="border-b border-podcast-border">
-          <div className="flex overflow-x-auto">
+          <div className="flex overflow-x-auto" dir="rtl">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -110,7 +107,7 @@ const WorkArea = () => {
 
         {/* Empty State */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-8 arabic-content">
+          <div className="text-center p-8 arabic-content" dir="rtl">
             <FileText className="w-16 h-16 text-podcast-gray/30 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-podcast-gray mb-2">
               اختر حلقة للبدء
@@ -129,9 +126,9 @@ const WorkArea = () => {
 
   return (
     <div className="podcast-panel h-full flex flex-col">
-      {/* Tab Navigation */}
+      {/* Tab Navigation with proper RTL ordering */}
       <div className="border-b border-podcast-border">
-        <div className="flex overflow-x-auto">
+        <div className="flex overflow-x-auto" dir="rtl">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -150,7 +147,7 @@ const WorkArea = () => {
       </div>
 
       {/* Document Title */}
-      <div className="p-4 border-b border-podcast-border arabic-content">
+      <div className="p-4 border-b border-podcast-border arabic-content" dir="rtl">
         <div className="text-right">
           {currentTab && (
             <>
@@ -168,7 +165,7 @@ const WorkArea = () => {
       </div>
 
       {/* Document Editor */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         {activeDocument ? (
           <DocumentEditor
             document={activeDocument}

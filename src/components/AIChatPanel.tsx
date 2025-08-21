@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, Loader2, Settings } from 'lucide-react';
 import { useAIChat } from '../hooks/useAIChat';
 import { useDocumentContext } from '../contexts/DocumentContext';
@@ -23,6 +22,9 @@ const AIChatPanel = () => {
     message: ChatMessage | null;
   }>({ isOpen: false, message: null });
   const [showSessionSettings, setShowSessionSettings] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
   
   const { 
     messages, 
@@ -42,8 +44,25 @@ const AIChatPanel = () => {
 
   const { activeDocument } = useDocumentContext();
 
+  // Auto-scroll to bottom when new messages arrive (but not if user scrolled up)
+  useEffect(() => {
+    if (!userScrolledUp && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isLoading, userScrolledUp]);
+
+  // Handle scroll detection to determine if user scrolled up
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setUserScrolledUp(!isNearBottom);
+    }
+  };
+
   const handleSend = async () => {
     if (inputValue.trim() && !isLoading) {
+      setUserScrolledUp(false); // Reset scroll state when sending new message
       await sendMessage(inputValue);
       setInputValue('');
     }
@@ -59,7 +78,7 @@ const AIChatPanel = () => {
   const handleApplyToDocument = (content: string) => {
     if (!contentInsertionService.isReady()) {
       console.warn('Content insertion service not ready');
-      applyToDocument(content); // Fallback to original method
+      applyToDocument(content);
       return;
     }
 
@@ -71,10 +90,8 @@ const AIChatPanel = () => {
     
     if (result.success) {
       console.log('Content inserted successfully:', result.message);
-      // Show success feedback - could be enhanced with toast notifications
     } else {
       console.error('Content insertion failed:', result.message);
-      // Fallback to original method
       applyToDocument(insertionModal.content);
     }
   };
@@ -85,7 +102,6 @@ const AIChatPanel = () => {
   };
 
   const handleCopyMessage = (content: string) => {
-    // Copy to clipboard and show feedback
     navigator.clipboard.writeText(content).then(() => {
       console.log('Message copied to clipboard');
     });
@@ -96,10 +112,8 @@ const AIChatPanel = () => {
   };
 
   const handleMigrationComplete = () => {
-    // Refresh messages to reflect any changes
     if (currentSessionKey) {
       const updatedMessages = sessionManager.getMessages(currentSessionKey);
-      // Note: This would ideally be handled by the useAIChat hook
       console.log('Migration completed, messages updated');
     }
   };
@@ -117,17 +131,14 @@ const AIChatPanel = () => {
         handleApplyToDocument(processedResponse.formattedContent);
         break;
       case 'append-to-section':
-        // Use append mode for content insertion
         contentInsertionService.setInsertionMode('append');
         handleApplyToDocument(processedResponse.formattedContent);
         break;
       case 'create-new-section':
-        // Add as new section with proper heading
         const sectionContent = `\n\n## قسم جديد\n\n${processedResponse.formattedContent}`;
         handleApplyToDocument(sectionContent);
         break;
       case 'replace-selection':
-        // This would need editor selection state - for now, fallback to cursor
         handleApplyToDocument(processedResponse.formattedContent);
         break;
       default:
@@ -193,10 +204,14 @@ const AIChatPanel = () => {
           </div>
         </div>
 
-        {/* Enhanced Chat Messages */}
+        {/* Enhanced Chat Messages with auto-scroll */}
         <div className="flex-1 overflow-hidden relative">
-          <div className="h-full overflow-y-auto p-4 scroll-smooth">
-            <div className="space-y-4">
+          <div 
+            ref={chatContainerRef}
+            className="h-full overflow-y-auto p-4 scroll-smooth"
+            onScroll={handleScroll}
+          >
+            <div className="space-y-4" dir="rtl">
               {messages.length === 0 && (
                 <div className="text-center text-podcast-gray py-8">
                   <p className="text-sm">ابدأ محادثة مع الذكاء الاصطناعي لمساعدتك في إنتاج البودكاست</p>
@@ -212,7 +227,6 @@ const AIChatPanel = () => {
               )}
               
               {messages.map((message, index) => {
-                // Process AI responses for enhanced display
                 const processedResponse = message.role === 'assistant' 
                   ? aiResponseProcessor.processResponse(message.content, {
                       documentType: activeDocument?.type,
@@ -243,6 +257,9 @@ const AIChatPanel = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Auto-scroll target */}
+              <div ref={messagesEndRef} />
             </div>
           </div>
           
@@ -251,16 +268,9 @@ const AIChatPanel = () => {
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
         </div>
 
-        {/* Input Area */}
+        {/* Input Area with RTL support */}
         <div className="p-4 border-t border-podcast-border">
-          <div className="flex gap-2">
-            <button
-              onClick={handleSend}
-              className="podcast-button p-3"
-              disabled={!inputValue.trim() || isLoading}
-            >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            </button>
+          <div className="flex gap-2" dir="rtl">
             <input
               type="text"
               value={inputValue}
@@ -271,6 +281,13 @@ const AIChatPanel = () => {
               dir="rtl"
               disabled={isLoading}
             />
+            <button
+              onClick={handleSend}
+              className="podcast-button p-3"
+              disabled={!inputValue.trim() || isLoading}
+            >
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </div>

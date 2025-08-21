@@ -10,19 +10,19 @@ const Index = () => {
     <PodcastProvider>
       <DocumentProvider>
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-          <div className="grid grid-cols-12 gap-4 p-4 h-screen">
+          <div className="grid grid-cols-12 gap-4 p-4 min-h-screen">
             {/* Navigation Panel */}
-            <div className="col-span-3">
+            <div className="col-span-3 overflow-hidden">
               <NavigationPanel />
             </div>
             
             {/* Work Area */}
-            <div className="col-span-6">
+            <div className="col-span-6 overflow-hidden">
               <WorkArea />
             </div>
             
             {/* AI Chat Panel */}
-            <div className="col-span-3">
+            <div className="col-span-3 overflow-hidden">
               <AIChatPanel />
             </div>
           </div>
