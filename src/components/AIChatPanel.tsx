@@ -148,7 +148,7 @@ const AIChatPanel = () => {
 
   return (
     <>
-      <div className="podcast-panel h-full flex flex-col">
+      <div className="podcast-panel h-full flex flex-col p-4">
         {/* Enhanced Header with Session Management */}
         <div className="podcast-header px-4 py-3 rounded-t-xl flex-shrink-0">
           <div className="flex items-center justify-between">

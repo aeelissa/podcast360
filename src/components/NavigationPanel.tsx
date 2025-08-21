@@ -87,7 +87,7 @@ const NavigationPanel = () => {
 
   return (
     <>
-      <div className={`podcast-panel h-full flex flex-col transition-all duration-300 ${
+      <div className={`podcast-panel h-full flex flex-col p-4 transition-all duration-300 ${
         isMinimized ? 'w-16' : 'w-full'
       }`}>
         {/* Enhanced Header with View Switcher */}

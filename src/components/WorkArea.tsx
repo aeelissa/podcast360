@@ -88,7 +88,7 @@ const WorkArea = () => {
   // Show episode selection prompt when no episode is selected
   if (!currentEpisode) {
     return (
-      <div className="podcast-panel h-full flex flex-col">
+      <div className="podcast-panel h-full flex flex-col p-4">
         {/* Tab Navigation - Disabled */}
         <div className="border-b border-podcast-border">
           <div className="flex overflow-x-auto" dir="rtl">
@@ -125,7 +125,7 @@ const WorkArea = () => {
   }
 
   return (
-    <div className="podcast-panel h-full flex flex-col">
+    <div className="podcast-panel h-full flex flex-col p-4">
       {/* Tab Navigation with proper RTL ordering */}
       <div className="border-b border-podcast-border flex-shrink-0">
         <div className="flex overflow-x-auto" dir="rtl">
