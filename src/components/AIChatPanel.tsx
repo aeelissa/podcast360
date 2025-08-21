@@ -150,7 +150,7 @@ const AIChatPanel = () => {
     <>
       <div className="podcast-panel h-full flex flex-col">
         {/* Enhanced Header with Session Management */}
-        <div className="podcast-header px-4 py-3 rounded-t-xl">
+        <div className="podcast-header px-4 py-3 rounded-t-xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
@@ -204,8 +204,8 @@ const AIChatPanel = () => {
           </div>
         </div>
 
-        {/* Enhanced Chat Messages with auto-scroll */}
-        <div className="flex-1 overflow-hidden relative">
+        {/* Enhanced Chat Messages with auto-scroll - Fixed height container */}
+        <div className="flex-1 min-h-0 overflow-hidden relative">
           <div 
             ref={chatContainerRef}
             className="h-full overflow-y-auto p-4 scroll-smooth"
@@ -269,7 +269,7 @@ const AIChatPanel = () => {
         </div>
 
         {/* Input Area with RTL support */}
-        <div className="p-4 border-t border-podcast-border">
+        <div className="p-4 border-t border-podcast-border flex-shrink-0">
           <div className="flex gap-2" dir="rtl">
             <input
               type="text"

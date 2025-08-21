@@ -106,7 +106,7 @@ const WorkArea = () => {
         </div>
 
         {/* Empty State */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center overflow-y-auto">
           <div className="text-center p-8 arabic-content" dir="rtl">
             <FileText className="w-16 h-16 text-podcast-gray/30 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-podcast-gray mb-2">
@@ -127,7 +127,7 @@ const WorkArea = () => {
   return (
     <div className="podcast-panel h-full flex flex-col">
       {/* Tab Navigation with proper RTL ordering */}
-      <div className="border-b border-podcast-border">
+      <div className="border-b border-podcast-border flex-shrink-0">
         <div className="flex overflow-x-auto" dir="rtl">
           {tabs.map((tab) => (
             <button
@@ -147,7 +147,7 @@ const WorkArea = () => {
       </div>
 
       {/* Document Title */}
-      <div className="p-4 border-b border-podcast-border arabic-content" dir="rtl">
+      <div className="p-4 border-b border-podcast-border arabic-content flex-shrink-0" dir="rtl">
         <div className="text-right">
           {currentTab && (
             <>
@@ -164,8 +164,8 @@ const WorkArea = () => {
         </div>
       </div>
 
-      {/* Document Editor */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Document Editor - Fixed height with internal scrolling */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         {activeDocument ? (
           <DocumentEditor
             document={activeDocument}

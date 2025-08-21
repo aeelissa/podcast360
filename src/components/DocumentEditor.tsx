@@ -110,11 +110,11 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       <LexicalComposer initialConfig={initialConfig}>
         <DocumentToolbar saveStatus={saveStatus} />
         
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           <RichTextPlugin
             contentEditable={
               <ContentEditable 
