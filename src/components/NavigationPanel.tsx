@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Settings, Users, Book, ChevronDown, ChevronRight, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import { usePodcast } from '../contexts/PodcastContext';
@@ -92,7 +91,7 @@ const NavigationPanel = () => {
         isMinimized ? 'w-16' : 'w-full'
       }`}>
         {/* Enhanced Header with View Switcher */}
-        <div className="podcast-header px-4 py-3 rounded-t-xl">
+        <div className="podcast-header px-4 py-3 rounded-t-xl flex-shrink-0">
           <div className="flex items-center justify-between mb-3 arabic-content">
             <div className="flex items-center gap-2">
               <button
@@ -164,7 +163,7 @@ const NavigationPanel = () => {
         </div>
 
         {/* Dynamic Content Based on Active View */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden">
           {activeView === 'navigation' && (
             <div className="h-full overflow-y-auto p-4 space-y-4">
               {renderNavigationContent()}
