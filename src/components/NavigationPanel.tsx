@@ -165,7 +165,7 @@ const NavigationPanel = () => {
         {/* Dynamic Content Based on Active View */}
         <div className="flex-1 min-h-0 overflow-hidden">
           {activeView === 'navigation' && (
-            <div className="h-full overflow-y-auto p-4 space-y-4">
+            <div className="h-full overflow-y-auto px-4 py-2 space-y-4">
               {renderNavigationContent()}
             </div>
           )}
